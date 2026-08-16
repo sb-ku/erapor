@@ -430,7 +430,7 @@ async function renderTabelSiswa() {
     .from("siswa")
     .select("*")
     .eq("kelas", kelasVal)
-    .order("name", { ascending: true });
+    .order("nama", { ascending: true });
 
   tbody.innerHTML = "";
   if (error || !listSiswa || listSiswa.length === 0) {
@@ -442,7 +442,7 @@ async function renderTabelSiswa() {
     tbody.innerHTML += `
       <tr class="hover:bg-gray-50 transition">
         <td class="px-4 py-3 font-mono text-xs font-semibold text-gray-700">${s.nisn}</td>
-        <td class="px-4 py-3 font-bold text-gray-800">${s.name}</td>
+        <td class="px-4 py-3 font-bold text-gray-800">${s.nama}</td>
         <td class="px-4 py-3 text-center">
           <button type="button" onclick="hapusSiswa('${s.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition cursor-pointer">
             <i class="fa-solid fa-trash mr-1"></i> Hapus
@@ -459,17 +459,17 @@ async function tambahSiswa(e) {
 
   const kelas = document.getElementById("tambah-siswa-kelas").value;
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
-  const name = document.getElementById("tambah-siswa-nama").value.trim();
+  const nama = document.getElementById("tambah-siswa-nama").value.trim();
 
   const { error } = await supabase
     .from("siswa")
-    .insert([{ kelas, nisn, name }]);
+    .insert([{ kelas, nisn, nama }]);
 
   if (error) {
     console.error("Gagal simpan ke Supabase:", error);
     alert(`Gagal menambah siswa: ${error.message}`);
   } else {
-    alert(`Alhamdulillah! Siswa (${name}) berhasil ditambahkan ke Supabase.`);
+    alert(`Alhamdulillah! Siswa (${nama}) berhasil ditambahkan ke Supabase.`);
     document.getElementById("tambah-siswa-nisn").value = "";
     document.getElementById("tambah-siswa-nama").value = "";
 
@@ -639,12 +639,12 @@ async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
     .from("siswa")
     .select("*")
     .eq("kelas", kelasVal)
-    .order("name", { ascending: true });
+    .order("nama", { ascending: true });
 
   siswaSelect.innerHTML = "";
   if (listSiswa && listSiswa.length > 0) {
     listSiswa.forEach((s) => {
-      siswaSelect.innerHTML += `<option value="${s.id}">${s.name} (NISN: ${s.nisn})</option>`;
+      siswaSelect.innerHTML += `<option value="${s.id}">${s.nama} (NISN: ${s.nisn})</option>`;
     });
   } else {
     siswaSelect.innerHTML = `<option value="">-- Belum ada data --</option>`;
@@ -743,7 +743,7 @@ async function renderPrintableData() {
     .maybeSingle();
 
   if (s) {
-    document.getElementById("print-nama-siswa").textContent = `: ${s.name}`;
+    document.getElementById("print-nama-siswa").textContent = `: ${s.nama}`;
     document.getElementById("print-nisn-siswa").textContent = `: ${s.nisn}`;
   }
   document.getElementById("print-kelas-siswa").textContent =
