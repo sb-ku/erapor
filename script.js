@@ -74,6 +74,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Tambahkan event listener agar saat pilihan Nama Siswa diganti, data langsung diperbarui
+  const selectSiswaCetak = document.getElementById("cetak-select-siswa");
+  if (selectSiswaCetak) {
+    selectSiswaCetak.addEventListener("change", renderPrintableData);
+  }
+
   checkLoginSession();
   loadPengaturanRapor();
 });
@@ -660,12 +666,14 @@ function updateTahfidzDropdownSiswa() {
 function updateKehadiranDropdownSiswa() {
   populateSiswaDropdown("kehadiran-select-kelas", "kehadiran-select-siswa");
 }
-function updateCetakDropdownSiswa() {
-  populateSiswaDropdown("cetak-select-kelas", "cetak-select-siswa");
+
+async function updateCetakDropdownSiswa() {
+  await populateSiswaDropdown("cetak-select-kelas", "cetak-select-siswa");
+  renderPrintableData(); // Otomatis trigger render rapor saat kelas diganti
 }
 
 /* =========================================================
-   8. INPUT & CETAK RAPORT 
+   8. INPUT & CETAK RAPORT OTOMATIS
    ========================================================= */
 async function simpanCapaianTahfidz(e) {
   e.preventDefault();
@@ -719,29 +727,58 @@ async function renderPrintableData() {
 
   const kelasVal = document.getElementById("cetak-select-kelas")?.value;
   const siswaId = document.getElementById("cetak-select-siswa")?.value;
-  if (!siswaId) return;
 
+  // Reset jika belum ada siswa terdaftar pada kelas tersebut
+  if (!siswaId) {
+    document.getElementById("print-nama-siswa").textContent = ": -";
+    document.getElementById("print-nisn-siswa").textContent = ": -";
+    document.getElementById("print-kelas-siswa").textContent =
+      `: Kelas ${kelasVal || "-"}`;
+    document.getElementById("printable-mapel-body").innerHTML =
+      `<tr><td colspan="5" class="border border-gray-400 px-2 py-2 text-center text-gray-500">Belum ada siswa dipilih</td></tr>`;
+    return;
+  }
+
+  // 1. Ambil Identitas Siswa
   const { data: s } = await supabase
     .from("siswa")
     .select("*")
     .eq("id", siswaId)
     .maybeSingle();
+
+  // 2. Ambil Capaian Tahfidz
   const { data: tf } = await supabase
     .from("capaian_tahfidz")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
+
+  // 3. Ambil Kehadiran & Catatan
   const { data: kh } = await supabase
     .from("kehadiran_catatan")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
+
+  // 4. Ambil Data Wali Kelas
   const { data: wali } = await supabase
     .from("wali_kelas")
     .select("*")
     .eq("kelas", kelasVal)
     .maybeSingle();
 
+  // 5. Ambil Daftar Mata Pelajaran & Nilai Siswa
+  const { data: listMapel } = await supabase
+    .from("mapel")
+    .select("*")
+    .eq("kelas", kelasVal);
+
+  const { data: listNilai } = await supabase
+    .from("nilai_mapel")
+    .select("*")
+    .eq("siswa_id", siswaId);
+
+  // --- RENDERING IDENTITAS SISWA ---
   if (s) {
     document.getElementById("print-nama-siswa").textContent = `: ${s.nama}`;
     document.getElementById("print-nisn-siswa").textContent = `: ${s.nisn}`;
@@ -757,18 +794,51 @@ async function renderPrintableData() {
   document.getElementById("print-titi-mangsa").textContent =
     `Diberikan di: Jakarta, ${configRapor.tanggalCetak}`;
 
+  // --- RENDERING WALI KELAS & MUDIR ---
   document.getElementById("print-walikelas-nama").textContent = wali
     ? wali.nama
     : "-";
   document.getElementById("print-walikelas-nip").textContent = wali
     ? `NIP. ${wali.nip}`
     : "NIP. -";
-
   document.getElementById("print-mudir-nama").textContent =
     configRapor.namaMudir;
   document.getElementById("print-mudir-niy").textContent =
     `NIY. ${configRapor.niyMudir}`;
 
+  // --- RENDERING TABEL MAPEL (CAPAIAN AKADEMIK) ---
+  const mapelBody = document.getElementById("printable-mapel-body");
+  if (mapelBody) {
+    mapelBody.innerHTML = "";
+    if (listMapel && listMapel.length > 0) {
+      listMapel.forEach((m, index) => {
+        const nil = listNilai
+          ? listNilai.find((n) => n.mapel_id === m.id)
+          : null;
+        const nilaiAngka = nil ? nil.nilai : m.value_default || 0;
+        const deskripsi = nil ? nil.deskripsi : m.desc_default || "-";
+
+        let predikat = "C";
+        if (nilaiAngka >= 90) predikat = "A (Sangat Baik)";
+        else if (nilaiAngka >= 80) predikat = "B (Baik)";
+        else if (nilaiAngka >= 70) predikat = "C (Cukup)";
+
+        mapelBody.innerHTML += `
+          <tr>
+            <td class="border border-gray-400 px-2 py-1 text-center">${index + 1}</td>
+            <td class="border border-gray-400 px-2 py-1 font-semibold">${m.name}</td>
+            <td class="border border-gray-400 px-2 py-1 text-center font-bold">${nilaiAngka}</td>
+            <td class="border border-gray-400 px-2 py-1 text-center font-medium">${predikat}</td>
+            <td class="border border-gray-400 px-2 py-1 text-xs">${deskripsi}</td>
+          </tr>
+        `;
+      });
+    } else {
+      mapelBody.innerHTML = `<tr><td colspan="5" class="border border-gray-400 px-2 py-2 text-center text-gray-500">Belum ada mata pelajaran terdaftar untuk Kelas ${kelasVal}</td></tr>`;
+    }
+  }
+
+  // --- RENDERING CAPAIAN TAHFIDZ & UMMI ---
   if (tf) {
     document.getElementById("print-tahfidz-ujian").textContent =
       tf.ujian_tasmi || "-";
@@ -780,8 +850,15 @@ async function renderPrintableData() {
       `${tf.jilid_ummi || "-"} (${tf.halaman_ummi || "-"})`;
     document.getElementById("print-ummi-tajwid").textContent =
       tf.nilai_tajwid || "-";
+  } else {
+    document.getElementById("print-tahfidz-ujian").textContent = "-";
+    document.getElementById("print-tahfidz-predikat").textContent = "-";
+    document.getElementById("print-tahfidz-hafalan").textContent = "-";
+    document.getElementById("print-ummi-jilid-hal").textContent = "-";
+    document.getElementById("print-ummi-tajwid").textContent = "-";
   }
 
+  // --- RENDERING ABSENSI & CATATAN WALI KELAS ---
   if (kh) {
     document.getElementById("print-absen-sakit").textContent =
       `${kh.sakit || 0} Hari`;
@@ -791,6 +868,11 @@ async function renderPrintableData() {
       `${kh.alpa || 0} Hari`;
     document.getElementById("print-catatan-wali").textContent =
       `"${kh.catatan_wali || "-"}"`;
+  } else {
+    document.getElementById("print-absen-sakit").textContent = "0 Hari";
+    document.getElementById("print-absen-izin").textContent = "0 Hari";
+    document.getElementById("print-absen-alpa").textContent = "0 Hari";
+    document.getElementById("print-catatan-wali").textContent = '"-"';
   }
 }
 
