@@ -20,8 +20,32 @@ let configRapor = {
 let currentRole = "walikelas";
 let loggedInWaliKelas = null;
 
+// Registrasi Fungsi Global untuk Event Handler HTML (Termasuk Touch Screen HP)
+window.setRole = setRole;
+window.switchRole = setRole;
+window.handleLogin = handleLogin;
+window.logout = logout;
+window.switchTab = switchTab;
+window.toggleSubMenuInput = toggleSubMenuInput;
+window.simpanSettingRapor = simpanSettingRapor;
+window.tambahSiswa = tambahSiswa;
+window.hapusSiswa = hapusSiswa;
+window.simpanWaliKelas = simpanWaliKelas;
+window.hapusWaliKelas = hapusWaliKelas;
+window.tambahMapelBaru = tambahMapelBaru;
+window.hapusMapel = hapusMapel;
+window.updateDropdownSiswa = updateDropdownSiswa;
+window.updateTahfidzDropdownSiswa = updateTahfidzDropdownSiswa;
+window.updateKehadiranDropdownSiswa = updateKehadiranDropdownSiswa;
+window.updateCetakDropdownSiswa = updateCetakDropdownSiswa;
+window.simpanCapaianTahfidz = simpanCapaianTahfidz;
+window.simpanKehadiranCatatan = simpanKehadiranCatatan;
+window.renderPrintableData = renderPrintableData;
+window.cetakRaportPDF = cetakRaportPDF;
+window.saveDataAlert = saveDataAlert;
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Pastikan SDK Supabase sudah siap sebelum digunakan
+  // Pastikan SDK Supabase terinisialisasi dengan aman
   if (window.supabase && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   } else {
@@ -38,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
    1. PENGATURAN RAPOR (TABEL: pengaturan_rapor)
    ========================================================= */
 async function loadPengaturanRapor() {
+  if (!supabase) return;
   const { data, error } = await supabase
     .from("pengaturan_rapor")
     .select("*")
@@ -72,6 +97,8 @@ function populateFormSetting() {
 
 async function simpanSettingRapor(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const th = document.getElementById("setting-tahun-ajaran").value.trim();
   const sm = document.getElementById("setting-semester").value;
   const tg = document.getElementById("setting-tanggal-cetak").value.trim();
@@ -187,6 +214,7 @@ async function handleLogin(e) {
       alert("Login Administrator Gagal! Username / Password salah.");
     }
   } else {
+    if (!supabase) return;
     const { data: wali, error } = await supabase
       .from("wali_kelas")
       .select("*")
@@ -234,16 +262,18 @@ function setRole(role) {
   const btnWali = document.getElementById("btn-role-walikelas");
   const btnAdmin = document.getElementById("btn-role-admin");
 
+  if (!btnWali || !btnAdmin) return;
+
   if (role === "walikelas") {
     btnWali.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition";
+      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
     btnAdmin.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
   } else {
     btnAdmin.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition";
+      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
     btnWali.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
   }
 }
 
@@ -262,6 +292,8 @@ async function renderDashboard() {
     if (adminContent) adminContent.classList.remove("hidden");
     if (waliContent) waliContent.classList.add("hidden");
 
+    if (!supabase) return;
+
     const { count: countSiswa } = await supabase
       .from("siswa")
       .select("*", { count: "exact", head: true });
@@ -269,9 +301,10 @@ async function renderDashboard() {
       .from("wali_kelas")
       .select("*", { count: "exact", head: true });
 
-    document.getElementById("dash-total-siswa").textContent = countSiswa || 0;
-    document.getElementById("dash-total-walikelas").textContent =
-      countWali || 0;
+    const elSiswa = document.getElementById("dash-total-siswa");
+    const elWali = document.getElementById("dash-total-walikelas");
+    if (elSiswa) elSiswa.textContent = countSiswa || 0;
+    if (elWali) elWali.textContent = countWali || 0;
 
     const progressContainer = document.getElementById(
       "dash-progress-kelas-container",
@@ -305,6 +338,8 @@ async function renderDashboard() {
     if (adminContent) adminContent.classList.add("hidden");
     if (waliContent) waliContent.classList.remove("hidden");
 
+    if (!supabase) return;
+
     const { count: countSiswaKls } = await supabase
       .from("siswa")
       .select("*", { count: "exact", head: true })
@@ -314,10 +349,10 @@ async function renderDashboard() {
       .select("*", { count: "exact", head: true })
       .eq("kelas", kelasWali);
 
-    document.getElementById("dash-wali-total-siswa").textContent =
-      countSiswaKls || 0;
-    document.getElementById("dash-wali-total-mapel").textContent =
-      countMapelKls || 0;
+    const elWaliSiswa = document.getElementById("dash-wali-total-siswa");
+    const elWaliMapel = document.getElementById("dash-wali-total-mapel");
+    if (elWaliSiswa) elWaliSiswa.textContent = countSiswaKls || 0;
+    if (elWaliMapel) elWaliMapel.textContent = countMapelKls || 0;
   }
 }
 
@@ -388,7 +423,7 @@ function unlockKelasDropdowns() {
 async function renderTabelSiswa() {
   const tbody = document.getElementById("table-siswa-body");
   const selectKelas = document.getElementById("tambah-siswa-kelas");
-  if (!tbody || !selectKelas) return;
+  if (!tbody || !selectKelas || !supabase) return;
 
   const kelasVal = selectKelas.value;
   const { data: listSiswa, error } = await supabase
@@ -409,7 +444,7 @@ async function renderTabelSiswa() {
         <td class="px-4 py-3 font-mono text-xs font-semibold text-gray-700">${s.nisn}</td>
         <td class="px-4 py-3 font-bold text-gray-800">${s.name}</td>
         <td class="px-4 py-3 text-center">
-          <button type="button" onclick="hapusSiswa('${s.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition">
+          <button type="button" onclick="hapusSiswa('${s.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition cursor-pointer">
             <i class="fa-solid fa-trash mr-1"></i> Hapus
           </button>
         </td>
@@ -420,12 +455,13 @@ async function renderTabelSiswa() {
 
 async function tambahSiswa(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const kelas = document.getElementById("tambah-siswa-kelas").value;
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const name = document.getElementById("tambah-siswa-nama").value.trim();
 
-  // Pengiriman data ke Supabase dengan pencatatan Log Error
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("siswa")
     .insert([{ kelas, nisn, name }]);
 
@@ -437,7 +473,6 @@ async function tambahSiswa(e) {
     document.getElementById("tambah-siswa-nisn").value = "";
     document.getElementById("tambah-siswa-nama").value = "";
 
-    // Refresh Tampilan Tabel & Dropdown Terkait
     renderTabelSiswa();
     updateDropdownSiswa();
     updateTahfidzDropdownSiswa();
@@ -447,6 +482,7 @@ async function tambahSiswa(e) {
 }
 
 async function hapusSiswa(id) {
+  if (!supabase) return;
   if (confirm("Apakah Anda yakin ingin menghapus siswa ini?")) {
     const { error } = await supabase.from("siswa").delete().eq("id", id);
     if (!error) {
@@ -463,7 +499,7 @@ async function hapusSiswa(id) {
    ========================================================= */
 async function renderTabelWaliKelas() {
   const tbody = document.getElementById("table-walikelas-body");
-  if (!tbody) return;
+  if (!tbody || !supabase) return;
 
   const { data: listWali, error } = await supabase
     .from("wali_kelas")
@@ -486,7 +522,7 @@ async function renderTabelWaliKelas() {
         <td class="px-4 py-3 text-xs font-bold text-brand-700">${w.username}</td>
         <td class="px-4 py-3 text-xs font-mono text-gray-600">${w.password}</td>
         <td class="px-4 py-3 text-center">
-          <button type="button" onclick="hapusWaliKelas('${w.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 transition">
+          <button type="button" onclick="hapusWaliKelas('${w.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 transition cursor-pointer">
             <i class="fa-solid fa-trash mr-1"></i> Hapus
           </button>
         </td>
@@ -497,6 +533,8 @@ async function renderTabelWaliKelas() {
 
 async function simpanWaliKelas(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const kelas = document.getElementById("walikelas-kelas").value;
   const nip = document.getElementById("walikelas-nip").value.trim();
   const nama = document.getElementById("walikelas-nama").value.trim();
@@ -518,6 +556,7 @@ async function simpanWaliKelas(e) {
 }
 
 async function hapusWaliKelas(id) {
+  if (!supabase) return;
   if (confirm("Hapus wali kelas ini?")) {
     await supabase.from("wali_kelas").delete().eq("id", id);
     renderTabelWaliKelas();
@@ -530,7 +569,7 @@ async function hapusWaliKelas(id) {
 async function renderTabelKelolaMapel() {
   const tbody = document.getElementById("table-kelola-mapel-body");
   const selectKelas = document.getElementById("tambah-mapel-kelas");
-  if (!tbody || !selectKelas) return;
+  if (!tbody || !selectKelas || !supabase) return;
 
   const kelasVal = selectKelas.value;
   const { data: listMapel } = await supabase
@@ -552,7 +591,7 @@ async function renderTabelKelolaMapel() {
         <td class="px-4 py-3 text-center">${m.value_default}</td>
         <td class="px-4 py-3 text-xs">${m.desc_default}</td>
         <td class="px-4 py-3 text-center">
-          <button onclick="hapusMapel('${m.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold">Hapus</button>
+          <button onclick="hapusMapel('${m.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold cursor-pointer">Hapus</button>
         </td>
       </tr>
     `;
@@ -561,6 +600,8 @@ async function renderTabelKelolaMapel() {
 
 async function tambahMapelBaru(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const kelas = document.getElementById("tambah-mapel-kelas").value;
   const name = document.getElementById("tambah-mapel-nama").value.trim();
   const value_default = document.getElementById("tambah-mapel-nilai").value;
@@ -578,6 +619,7 @@ async function tambahMapelBaru(e) {
 }
 
 async function hapusMapel(id) {
+  if (!supabase) return;
   if (confirm("Hapus mata pelajaran ini?")) {
     await supabase.from("mapel").delete().eq("id", id);
     renderTabelKelolaMapel();
@@ -590,7 +632,7 @@ async function hapusMapel(id) {
 async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
   const kelasSelect = document.getElementById(selectKelasId);
   const siswaSelect = document.getElementById(selectSiswaId);
-  if (!kelasSelect || !siswaSelect) return;
+  if (!kelasSelect || !siswaSelect || !supabase) return;
 
   const kelasVal = kelasSelect.value;
   const { data: listSiswa } = await supabase
@@ -627,6 +669,8 @@ function updateCetakDropdownSiswa() {
    ========================================================= */
 async function simpanCapaianTahfidz(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const siswa_id = document.getElementById("tahfidz-select-siswa").value;
   if (!siswa_id) return alert("Pilih siswa terlebih dahulu!");
 
@@ -650,6 +694,8 @@ async function simpanCapaianTahfidz(e) {
 
 async function simpanKehadiranCatatan(e) {
   e.preventDefault();
+  if (!supabase) return;
+
   const siswa_id = document.getElementById("kehadiran-select-siswa").value;
   if (!siswa_id) return alert("Pilih siswa terlebih dahulu!");
 
@@ -669,6 +715,8 @@ async function simpanKehadiranCatatan(e) {
 }
 
 async function renderPrintableData() {
+  if (!supabase) return;
+
   const kelasVal = document.getElementById("cetak-select-kelas")?.value;
   const siswaId = document.getElementById("cetak-select-siswa")?.value;
   if (!siswaId) return;

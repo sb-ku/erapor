@@ -60,13 +60,13 @@
           </p>
         </div>
 
-        <!-- Toggle Role -->
-        <div class="flex bg-gray-100 p-1 rounded-xl mb-6">
+        <!-- Toggle Role Login (Disesuaikan dengan z-index & touch event) -->
+        <div class="flex bg-gray-100 p-1 rounded-xl mb-6 relative z-10">
           <button
             id="btn-role-walikelas"
             type="button"
             onclick="setRole('walikelas')"
-            class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition"
+            class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none"
           >
             <i class="fa-solid fa-user-graduate mr-2"></i>Wali Kelas
           </button>
@@ -74,7 +74,7 @@
             id="btn-role-admin"
             type="button"
             onclick="setRole('admin')"
-            class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition"
+            class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none"
           >
             <i class="fa-solid fa-user-shield mr-2"></i>Administrator
           </button>
@@ -118,7 +118,7 @@
           </div>
           <button
             type="submit"
-            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200 cursor-pointer"
           >
             Masuk ke Sistem
             <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
@@ -166,7 +166,7 @@
             </div>
             <button
               onclick="logout()"
-              class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center"
+              class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center cursor-pointer"
             >
               <i class="fa-solid fa-sign-out-alt mr-1"></i> Keluar
             </button>
@@ -187,11 +187,11 @@
               Menu Utama
             </p>
             <nav class="space-y-1">
-              <!-- MENU DASHBOARD (SELALU ADA) -->
+              <!-- MENU DASHBOARD -->
               <button
                 onclick="switchTab('dashboard')"
                 id="nav-dashboard"
-                class="w-full flex items-center px-3 py-2.5 text-sm font-bold rounded-lg text-brand-700 bg-brand-50 shadow-sm transition"
+                class="w-full flex items-center px-3 py-2.5 text-sm font-bold rounded-lg text-brand-700 bg-brand-50 shadow-sm transition cursor-pointer"
               >
                 <i class="fa-solid fa-chart-pie w-6 text-brand-600"></i>
                 Dashboard
@@ -202,7 +202,7 @@
                 <button
                   onclick="switchTab('setting-rapor')"
                   id="nav-setting-rapor"
-                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                 >
                   <i class="fa-solid fa-sliders w-6 text-brand-600"></i>
                   Setting Rapor
@@ -211,7 +211,7 @@
                 <button
                   onclick="switchTab('kelola-mapel')"
                   id="nav-kelola-mapel"
-                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                 >
                   <i class="fa-solid fa-book-bookmark w-6 text-brand-600"></i>
                   Kelola Mapel
@@ -220,7 +220,7 @@
                 <button
                   onclick="switchTab('input-siswa')"
                   id="nav-input-siswa"
-                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                 >
                   <i class="fa-solid fa-user-graduate w-6 text-brand-600"></i>
                   Data Siswa
@@ -229,7 +229,7 @@
                 <button
                   onclick="switchTab('input-walikelas')"
                   id="nav-input-walikelas"
-                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                 >
                   <i class="fa-solid fa-chalkboard-user w-6 text-brand-600"></i>
                   Wali Kelas
@@ -242,7 +242,7 @@
                   type="button"
                   onclick="toggleSubMenuInput()"
                   id="nav-menu-input"
-                  class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-bold rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 transition"
+                  class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-bold rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
                 >
                   <div class="flex items-center">
                     <i class="fa-solid fa-pen-to-square w-6 text-brand-600"></i>
@@ -259,7 +259,7 @@
                   <button
                     onclick="switchTab('input-mapel')"
                     id="nav-input-mapel"
-                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                   >
                     <i
                       class="fa-solid fa-graduation-cap w-5 text-brand-600"
@@ -270,7 +270,7 @@
                   <button
                     onclick="switchTab('input-tahfidz')"
                     id="nav-input-tahfidz"
-                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                   >
                     <i
                       class="fa-solid fa-book-open-reader w-5 text-brand-600"
@@ -281,7 +281,7 @@
                   <button
                     onclick="switchTab('input-kehadiran')"
                     id="nav-input-kehadiran"
-                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                   >
                     <i
                       class="fa-solid fa-clipboard-user w-5 text-brand-600"
@@ -295,7 +295,7 @@
               <button
                 onclick="switchTab('cetak-raport')"
                 id="nav-cetak-raport"
-                class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition cursor-pointer"
               >
                 <i class="fa-solid fa-print w-6 text-brand-600"></i> Cetak
                 Raport
@@ -370,9 +370,7 @@
                 <div
                   class="grid grid-cols-1 md:grid-cols-2 gap-4"
                   id="dash-progress-kelas-container"
-                >
-                  <!-- Diisi secara dinamis oleh JavaScript -->
-                </div>
+                ></div>
               </div>
             </div>
 
@@ -424,9 +422,7 @@
                 <div
                   class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   id="dash-wali-status-container"
-                >
-                  <!-- Diisi secara dinamis oleh JavaScript -->
-                </div>
+                ></div>
               </div>
             </div>
           </section>
@@ -529,7 +525,7 @@
               <div class="md:col-span-2 flex justify-end">
                 <button
                   type="submit"
-                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition cursor-pointer"
                 >
                   <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Pengaturan
                 </button>
@@ -607,7 +603,7 @@
             <div class="flex justify-end">
               <button
                 onclick="saveDataAlert()"
-                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition cursor-pointer"
               >
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Nilai Mapel
               </button>
@@ -696,7 +692,7 @@
               <div class="md:col-span-3 flex justify-end">
                 <button
                   type="submit"
-                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition cursor-pointer"
                 >
                   <i class="fa-solid fa-plus mr-1"></i> Tambah Mata Pelajaran
                 </button>
@@ -793,7 +789,7 @@
               <div class="md:col-span-3 flex justify-end">
                 <button
                   type="submit"
-                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition cursor-pointer"
                 >
                   <i class="fa-solid fa-plus mr-1"></i> Tambah Siswa Baru
                 </button>
@@ -918,7 +914,7 @@
               <div class="md:col-span-2 flex justify-end">
                 <button
                   type="submit"
-                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition cursor-pointer"
                 >
                   <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data &
                   Akun
@@ -1133,7 +1129,7 @@
             <div class="flex justify-end">
               <button
                 onclick="simpanCapaianTahfidz(event)"
-                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition cursor-pointer"
               >
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data
                 Al-Qur'an
@@ -1254,7 +1250,7 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
             <div class="flex justify-end">
               <button
                 onclick="simpanKehadiranCatatan(event)"
-                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition cursor-pointer"
               >
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Kehadiran &
                 Catatan
@@ -1309,7 +1305,7 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                 <div class="self-end pt-2 sm:pt-0">
                   <button
                     onclick="cetakRaportPDF()"
-                    class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow flex items-center transition"
+                    class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow flex items-center transition cursor-pointer"
                   >
                     <i class="fa-solid fa-print mr-1.5"></i> Cetak / Simpan PDF
                   </button>
