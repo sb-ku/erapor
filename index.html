@@ -1,0 +1,1586 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eRapor - Sekolah Bintang Tahfidz Al-Qur'an</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                500: "#22c55e",
+                600: "#16a34a",
+                700: "#15803d",
+                800: "#166534",
+                900: "#14532d",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <!-- FontAwesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- File CSS Eksternal -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+    <!-- ================= VIEW 1: LOGIN ================= -->
+    <div id="login-view" class="flex-1 flex items-center justify-center p-4">
+      <div
+        class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100"
+      >
+        <div class="text-center mb-8">
+          <div
+            class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 p-2 shadow-md border border-gray-100"
+          >
+            <img
+              src="./image/sb.png"
+              alt="Logo Sekolah Bintang"
+              class="max-h-full max-w-full object-contain"
+            />
+          </div>
+          <h1 class="text-2xl font-bold text-gray-800">eRapor Digital</h1>
+          <p class="text-sm text-gray-500 font-medium">
+            Sekolah Bintang Tahfidz Al-Qur'an
+          </p>
+        </div>
+
+        <!-- Toggle Role -->
+        <div class="flex bg-gray-100 p-1 rounded-xl mb-6">
+          <button
+            id="btn-role-walikelas"
+            type="button"
+            onclick="setRole('walikelas')"
+            class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition"
+          >
+            <i class="fa-solid fa-user-graduate mr-2"></i>Wali Kelas
+          </button>
+          <button
+            id="btn-role-admin"
+            type="button"
+            onclick="setRole('admin')"
+            class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition"
+          >
+            <i class="fa-solid fa-user-shield mr-2"></i>Administrator
+          </button>
+        </div>
+
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1"
+              >Username / NIP / NUPTK</label
+            >
+            <input
+              type="text"
+              id="login-username"
+              required
+              placeholder="Masukkan Username / NIP"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1"
+              >Kata Sandi</label
+            >
+            <input
+              type="password"
+              id="login-password"
+              required
+              placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1"
+              >Tahun Ajaran & Semester</label
+            >
+            <select
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+            >
+              <option>2026/2027 - Ganjil</option>
+              <option>2026/2027 - Genap</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200"
+          >
+            Masuk ke Sistem
+            <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= VIEW 2: DASHBOARD ================= -->
+    <div id="app-view" class="hidden flex-1 flex flex-col min-h-screen">
+      <!-- Header / Navbar Dashboard -->
+      <header class="bg-brand-800 text-white shadow-md no-print">
+        <div
+          class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"
+        >
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-white rounded-lg p-1 flex items-center justify-center"
+            >
+              <img
+                src="./image/sb.png"
+                alt="Logo SB"
+                class="max-h-full max-w-full object-contain"
+              />
+            </div>
+            <div>
+              <h2 class="font-bold text-lg leading-tight">
+                Sekolah Bintang Tahfidz Al-Qur'an
+              </h2>
+              <p class="text-xs text-brand-200">
+                Sistem Informasi Penilaian Raport Tingkat Sekolah Dasar
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right hidden sm:block">
+              <p id="user-display-name" class="font-semibold text-sm">
+                Ust. Husen, S.Pd.I
+              </p>
+              <span
+                id="user-display-role"
+                class="inline-block bg-brand-600 text-xs px-2 py-0.5 rounded text-brand-100"
+                >Wali Kelas V</span
+              >
+            </div>
+            <button
+              onclick="logout()"
+              class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center"
+            >
+              <i class="fa-solid fa-sign-out-alt mr-1"></i> Keluar
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Grid -->
+      <div
+        class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-4 gap-6 no-print"
+      >
+        <!-- Sidebar Navigation -->
+        <aside class="md:col-span-1 space-y-2">
+          <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <p
+              class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3"
+            >
+              Menu Utama
+            </p>
+            <nav class="space-y-1">
+              <!-- MENU DASHBOARD (SELALU ADA) -->
+              <button
+                onclick="switchTab('dashboard')"
+                id="nav-dashboard"
+                class="w-full flex items-center px-3 py-2.5 text-sm font-bold rounded-lg text-brand-700 bg-brand-50 shadow-sm transition"
+              >
+                <i class="fa-solid fa-chart-pie w-6 text-brand-600"></i>
+                Dashboard
+              </button>
+
+              <!-- MENU KHUSUS ADMIN -->
+              <div id="admin-only-menu" class="space-y-1">
+                <button
+                  onclick="switchTab('setting-rapor')"
+                  id="nav-setting-rapor"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                >
+                  <i class="fa-solid fa-sliders w-6 text-brand-600"></i>
+                  Setting Rapor
+                </button>
+
+                <button
+                  onclick="switchTab('kelola-mapel')"
+                  id="nav-kelola-mapel"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                >
+                  <i class="fa-solid fa-book-bookmark w-6 text-brand-600"></i>
+                  Kelola Mapel
+                </button>
+
+                <button
+                  onclick="switchTab('input-siswa')"
+                  id="nav-input-siswa"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                >
+                  <i class="fa-solid fa-user-graduate w-6 text-brand-600"></i>
+                  Data Siswa
+                </button>
+
+                <button
+                  onclick="switchTab('input-walikelas')"
+                  id="nav-input-walikelas"
+                  class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                >
+                  <i class="fa-solid fa-chalkboard-user w-6 text-brand-600"></i>
+                  Wali Kelas
+                </button>
+              </div>
+
+              <!-- MENU INPUT & SUB-MENU -->
+              <div class="space-y-1 pt-1">
+                <button
+                  type="button"
+                  onclick="toggleSubMenuInput()"
+                  id="nav-menu-input"
+                  class="w-full flex items-center justify-between px-3 py-2.5 text-sm font-bold rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 transition"
+                >
+                  <div class="flex items-center">
+                    <i class="fa-solid fa-pen-to-square w-6 text-brand-600"></i>
+                    <span>Menu Input</span>
+                  </div>
+                  <i
+                    id="icon-submenu-arrow"
+                    class="fa-solid fa-chevron-down text-xs transition-transform duration-200 rotate-180"
+                  ></i>
+                </button>
+
+                <!-- SUB MENU WRAPPER -->
+                <div id="submenu-input-container" class="pl-4 space-y-1">
+                  <button
+                    onclick="switchTab('input-mapel')"
+                    id="nav-input-mapel"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    <i
+                      class="fa-solid fa-graduation-cap w-5 text-brand-600"
+                    ></i>
+                    Nilai Mapel
+                  </button>
+
+                  <button
+                    onclick="switchTab('input-tahfidz')"
+                    id="nav-input-tahfidz"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    <i
+                      class="fa-solid fa-book-open-reader w-5 text-brand-600"
+                    ></i>
+                    Tahfidz, Tasmi' & Ummi
+                  </button>
+
+                  <button
+                    onclick="switchTab('input-kehadiran')"
+                    id="nav-input-kehadiran"
+                    class="w-full flex items-center px-3 py-2 text-xs font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    <i
+                      class="fa-solid fa-clipboard-user w-5 text-brand-600"
+                    ></i>
+                    Kehadiran & Catatan
+                  </button>
+                </div>
+              </div>
+
+              <!-- MENU CETAK RAPORT -->
+              <button
+                onclick="switchTab('cetak-raport')"
+                id="nav-cetak-raport"
+                class="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition"
+              >
+                <i class="fa-solid fa-print w-6 text-brand-600"></i> Cetak
+                Raport
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="md:col-span-3">
+          <!-- TAB DASHBOARD DINAMIS -->
+          <section
+            id="tab-dashboard"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div class="border-b pb-4">
+              <h3 id="dash-title" class="text-xl font-bold text-gray-800">
+                Ringkasan Statistik System
+              </h3>
+              <p id="dash-subtitle" class="text-sm text-gray-500">
+                Memantau progres pengisian nilai eRapor Sekolah Dasar.
+              </p>
+            </div>
+
+            <!-- DASHBOARD VIEW: ADMINISTRATOR -->
+            <div id="dash-admin-content" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  class="bg-gradient-to-r from-brand-500 to-brand-700 text-white p-5 rounded-xl shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <p class="text-xs uppercase font-bold text-brand-100">
+                      Total Siswa Terdaftar
+                    </p>
+                    <h4
+                      id="dash-total-siswa"
+                      class="text-3xl font-extrabold mt-1"
+                    >
+                      0
+                    </h4>
+                  </div>
+                  <i class="fa-solid fa-users text-4xl opacity-80"></i>
+                </div>
+
+                <div
+                  class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-5 rounded-xl shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <p class="text-xs uppercase font-bold text-blue-100">
+                      Total Wali Kelas
+                    </p>
+                    <h4
+                      id="dash-total-walikelas"
+                      class="text-3xl font-extrabold mt-1"
+                    >
+                      0
+                    </h4>
+                  </div>
+                  <i
+                    class="fa-solid fa-chalkboard-user text-4xl opacity-80"
+                  ></i>
+                </div>
+              </div>
+
+              <div>
+                <h4
+                  class="font-bold text-gray-800 text-base mb-3 flex items-center"
+                >
+                  <i class="fa-solid fa-chart-line mr-2 text-brand-600"></i>
+                  Progres Input Nilai Per Kelas
+                </h4>
+                <div
+                  class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  id="dash-progress-kelas-container"
+                >
+                  <!-- Diisi secara dinamis oleh JavaScript -->
+                </div>
+              </div>
+            </div>
+
+            <!-- DASHBOARD VIEW: WALI KELAS -->
+            <div id="dash-wali-content" class="hidden space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  class="bg-gradient-to-r from-emerald-500 to-teal-700 text-white p-5 rounded-xl shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <p class="text-xs uppercase font-bold text-emerald-100">
+                      Jumlah Siswa Binaan
+                    </p>
+                    <h4
+                      id="dash-wali-total-siswa"
+                      class="text-3xl font-extrabold mt-1"
+                    >
+                      0
+                    </h4>
+                  </div>
+                  <i class="fa-solid fa-user-graduate text-4xl opacity-80"></i>
+                </div>
+
+                <div
+                  class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-5 rounded-xl shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <p class="text-xs uppercase font-bold text-cyan-100">
+                      Jumlah Mata Pelajaran
+                    </p>
+                    <h4
+                      id="dash-wali-total-mapel"
+                      class="text-3xl font-extrabold mt-1"
+                    >
+                      0
+                    </h4>
+                  </div>
+                  <i class="fa-solid fa-book-bookmark text-4xl opacity-80"></i>
+                </div>
+              </div>
+
+              <div>
+                <h4
+                  class="font-bold text-gray-800 text-base mb-3 flex items-center"
+                >
+                  <i class="fa-solid fa-list-check mr-2 text-brand-600"></i>
+                  Status Kelengkapan Input eRapor Kelas
+                </h4>
+                <div
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  id="dash-wali-status-container"
+                >
+                  <!-- Diisi secara dinamis oleh JavaScript -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB SETTING RAPOR -->
+          <section
+            id="tab-setting-rapor"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div class="border-b pb-4">
+              <h3 class="text-xl font-bold text-gray-800">
+                Pengaturan Umum Rapor
+              </h3>
+              <p class="text-sm text-gray-500">
+                Atur Tahun Ajaran, Semester, Tanggal Cetak Rapor, dan Data Mudir
+                Sekolah.
+              </p>
+            </div>
+
+            <form
+              onsubmit="simpanSettingRapor(event)"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-5 rounded-xl border border-gray-200"
+            >
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                >
+                  Tahun Ajaran
+                </label>
+                <input
+                  type="text"
+                  id="setting-tahun-ajaran"
+                  required
+                  placeholder="Contoh: 2026/2027"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                >
+                  Semester Aktif
+                </label>
+                <select
+                  id="setting-semester"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="Ganjil (1)">Ganjil (1)</option>
+                  <option value="Genap (2)">Genap (2)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                >
+                  Tanggal Cetak Rapor
+                </label>
+                <input
+                  type="text"
+                  id="setting-tanggal-cetak"
+                  required
+                  placeholder="Contoh: 14 Agustus 2026"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                >
+                  Nama Mudir Sekolah
+                </label>
+                <input
+                  type="text"
+                  id="setting-nama-mudir"
+                  required
+                  placeholder="Contoh: Ust. Khoiruddin, S.Si"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                >
+                  NIY / NIP Mudir Sekolah
+                </label>
+                <input
+                  type="text"
+                  id="setting-niy-mudir"
+                  required
+                  placeholder="Contoh: 201501 001"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div class="md:col-span-2 flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                >
+                  <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Pengaturan
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- TAB 1: INPUT NILAI MAPEL -->
+          <section
+            id="tab-input-mapel"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div
+              class="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            >
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">
+                  Input Nilai Mata Pelajaran
+                </h3>
+                <p class="text-sm text-gray-500">
+                  Pilih tingkat kelas dan nama murid untuk menginput nilai
+                  akademik.
+                </p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Kelas</label
+                  >
+                  <select
+                    id="select-kelas"
+                    onchange="updateDropdownSiswa()"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-brand-50 border-brand-300 font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                    <option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option>
+                    <option value="6">Kelas 6</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Nama Murid</label
+                  >
+                  <select
+                    id="select-siswa"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 border-gray-300 font-medium focus:ring-2 focus:ring-brand-500 outline-none"
+                  ></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left text-gray-600">
+                <thead class="text-xs uppercase bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="px-4 py-3 rounded-l-lg">No</th>
+                    <th class="px-4 py-3">Mata Pelajaran</th>
+                    <th class="px-4 py-3 text-center">Nilai Angka (0-100)</th>
+                    <th class="px-4 py-3">Capaian Kompetensi / Deskripsi</th>
+                  </tr>
+                </thead>
+                <tbody
+                  class="divide-y divide-gray-200"
+                  id="table-mapel-body"
+                ></tbody>
+              </table>
+            </div>
+            <div class="flex justify-end">
+              <button
+                onclick="saveDataAlert()"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+              >
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Nilai Mapel
+              </button>
+            </div>
+          </section>
+
+          <!-- TAB 2: KELOLA MATA PELAJARAN -->
+          <section
+            id="tab-kelola-mapel"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div class="border-b pb-4">
+              <h3 class="text-xl font-bold text-gray-800">
+                Manajemen Mata Pelajaran
+              </h3>
+              <p class="text-sm text-gray-500">
+                Tambah atau sesuaikan daftar mata pelajaran untuk tiap tingkat
+                kelas.
+              </p>
+            </div>
+
+            <form
+              onsubmit="tambahMapelBaru(event)"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200"
+            >
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Pilih Kelas</label
+                >
+                <select
+                  id="tambah-mapel-kelas"
+                  onchange="renderTabelKelolaMapel()"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                >
+                  <option value="1">Kelas 1</option>
+                  <option value="2">Kelas 2</option>
+                  <option value="3">Kelas 3</option>
+                  <option value="4">Kelas 4</option>
+                  <option value="5" selected>Kelas 5</option>
+                  <option value="6">Kelas 6</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Nama Mata Pelajaran</label
+                >
+                <input
+                  type="text"
+                  id="tambah-mapel-nama"
+                  required
+                  placeholder="Contoh: Fiqh Ibadah / Tahsin"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Nilai Standar Default</label
+                >
+                <input
+                  type="number"
+                  id="tambah-mapel-nilai"
+                  min="0"
+                  max="100"
+                  value="85"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                />
+              </div>
+              <div class="md:col-span-3">
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Deskripsi Capaian Default</label
+                >
+                <input
+                  type="text"
+                  id="tambah-mapel-desc"
+                  required
+                  placeholder="Contoh: Sangat baik dalam memahami materi..."
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                />
+              </div>
+              <div class="md:col-span-3 flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition"
+                >
+                  <i class="fa-solid fa-plus mr-1"></i> Tambah Mata Pelajaran
+                </button>
+              </div>
+            </form>
+
+            <div>
+              <h4 class="font-bold text-gray-800 text-sm mb-3">
+                Daftar Mata Pelajaran Terdaftar
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                  <thead class="text-xs uppercase bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="px-4 py-3 w-12">No</th>
+                      <th class="px-4 py-3">Nama Mata Pelajaran</th>
+                      <th class="px-4 py-3 text-center">Nilai Default</th>
+                      <th class="px-4 py-3">Deskripsi Default</th>
+                      <th class="px-4 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-gray-200"
+                    id="table-kelola-mapel-body"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 3: INPUT DATA SISWA -->
+          <section
+            id="tab-input-siswa"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div class="border-b pb-4">
+              <h3 class="text-xl font-bold text-gray-800">
+                Manajemen Data Siswa
+              </h3>
+              <p class="text-sm text-gray-500">
+                Tambah data murid baru berdasarkan tingkat kelas.
+              </p>
+            </div>
+
+            <form
+              onsubmit="tambahSiswa(event)"
+              class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200"
+            >
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Pilih Kelas</label
+                >
+                <select
+                  id="tambah-siswa-kelas"
+                  onchange="renderTabelSiswa()"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                >
+                  <option value="1">Kelas 1</option>
+                  <option value="2">Kelas 2</option>
+                  <option value="3">Kelas 3</option>
+                  <option value="4">Kelas 4</option>
+                  <option value="5" selected>Kelas 5</option>
+                  <option value="6">Kelas 6</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >NISN Murid</label
+                >
+                <input
+                  type="text"
+                  id="tambah-siswa-nisn"
+                  required
+                  placeholder="Contoh: 0158293043"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Nama Lengkap Murid</label
+                >
+                <input
+                  type="text"
+                  id="tambah-siswa-nama"
+                  required
+                  placeholder="Contoh: Abdullah Umar"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                />
+              </div>
+              <div class="md:col-span-3 flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow transition"
+                >
+                  <i class="fa-solid fa-plus mr-1"></i> Tambah Siswa Baru
+                </button>
+              </div>
+            </form>
+
+            <div>
+              <h4 class="font-bold text-gray-800 text-sm mb-3">
+                Daftar Siswa Terdaftar
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                  <thead class="text-xs uppercase bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="px-4 py-3">NISN</th>
+                      <th class="px-4 py-3">Nama Siswa</th>
+                      <th class="px-4 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-gray-200"
+                    id="table-siswa-body"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 4: INPUT DATA WALI KELAS -->
+          <section
+            id="tab-input-walikelas"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div class="border-b pb-4">
+              <h3 class="text-xl font-bold text-gray-800">
+                Manajemen Data Wali Kelas & Akun Login
+              </h3>
+              <p class="text-sm text-gray-500">
+                Input data Wali Kelas beserta Kredensial Username & Password per
+                kelas.
+              </p>
+            </div>
+
+            <form
+              onsubmit="simpanWaliKelas(event)"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200"
+            >
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Pilih Kelas Binaan</label
+                >
+                <select
+                  id="walikelas-kelas"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="1">Kelas 1</option>
+                  <option value="2">Kelas 2</option>
+                  <option value="3">Kelas 3</option>
+                  <option value="4">Kelas 4</option>
+                  <option value="5" selected>Kelas 5</option>
+                  <option value="6">Kelas 6</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >NIP / NUPTK Ust/Ustadzah</label
+                >
+                <input
+                  type="text"
+                  id="walikelas-nip"
+                  placeholder="Contoh: 19880512 202101 1 001"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label
+                  class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                  >Nama Lengkap Wali Kelas & Gelar</label
+                >
+                <input
+                  type="text"
+                  id="walikelas-nama"
+                  placeholder="Contoh: Ustadzah. Yuni, S.Pd.I"
+                  required
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-brand-700 mb-1 uppercase"
+                >
+                  <i class="fa-solid fa-user mr-1"></i> Username Login
+                </label>
+                <input
+                  type="text"
+                  id="walikelas-username"
+                  placeholder="Contoh: wali5"
+                  required
+                  class="w-full px-3 py-2 border border-brand-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-brand-700 mb-1 uppercase"
+                >
+                  <i class="fa-solid fa-key mr-1"></i> Kata Sandi (Password)
+                </label>
+                <input
+                  type="text"
+                  id="walikelas-password"
+                  placeholder="Contoh: pass5123"
+                  required
+                  class="w-full px-3 py-2 border border-brand-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div class="md:col-span-2 flex justify-end">
+                <button
+                  type="submit"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+                >
+                  <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data &
+                  Akun
+                </button>
+              </div>
+            </form>
+
+            <div>
+              <h4 class="font-bold text-gray-800 text-sm mb-3">
+                Daftar Wali Kelas & Akses Akun
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                  <thead class="text-xs uppercase bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="px-4 py-3 w-12">No</th>
+                      <th class="px-4 py-3">Kelas</th>
+                      <th class="px-4 py-3">Nama Wali Kelas</th>
+                      <th class="px-4 py-3">NIP</th>
+                      <th class="px-4 py-3">Username</th>
+                      <th class="px-4 py-3">Password</th>
+                      <th class="px-4 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-gray-200"
+                    id="table-walikelas-body"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAB 5: TAHFIDZ, TASMI & METODE UMMI -->
+          <section
+            id="tab-input-tahfidz"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div
+              class="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            >
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">
+                  Capaian Tahfidz, Tasmi' & Metode Ummi
+                </h3>
+                <p class="text-sm text-gray-500">
+                  Pengujian hafalan, ujian kelancaran tasmi', serta progress
+                  jilid Ummi.
+                </p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Kelas</label
+                  >
+                  <select
+                    id="tahfidz-select-kelas"
+                    onchange="updateTahfidzDropdownSiswa()"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-brand-50 border-brand-300 font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                    <option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option>
+                    <option value="6">Kelas 6</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Nama Murid</label
+                  >
+                  <select
+                    id="tahfidz-select-siswa"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 border-gray-300 font-medium focus:ring-2 focus:ring-brand-500 outline-none"
+                  ></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tasmi & Hafalan -->
+            <div class="space-y-4">
+              <h4 class="font-bold text-brand-800 text-base flex items-center">
+                <i class="fa-solid fa-ribbon mr-2"></i> Evaluasi Tasmi' &
+                Hafalan Qur'an
+              </h4>
+              <div
+                class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200"
+              >
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Sertifikasi / Ujian Tasmi'</label
+                  >
+                  <input
+                    type="text"
+                    value="Lulus Tasmi' Juz 30 (Sekali Duduk)"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Predikat Nilai Tasmi'</label
+                  >
+                  <select
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
+                  >
+                    <option selected>Mumtaz (Sangat Baik)</option>
+                    <option>Jayyid Jiddan (Baik Sekali)</option>
+                    <option>Jayyid (Baik)</option>
+                    <option>Maqbul (Cukup)</option>
+                  </select>
+                </div>
+                <div class="md:col-span-2">
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Capaian Tambahan Hafalan (Mutqin)</label
+                  >
+                  <input
+                    type="text"
+                    value="Juz 29 (Surah Al-Mulk s.d. Surah Al-Mursalat)"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Metode Ummi (6 Jilid) -->
+            <div class="space-y-4">
+              <h4 class="font-bold text-brand-800 text-base flex items-center">
+                <i class="fa-solid fa-book-open mr-2"></i> Evaluasi Metode Ummi
+                (6 Jilid)
+              </h4>
+              <div
+                class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200"
+              >
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Jilid Ummi Aktif</label
+                  >
+                  <select
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold text-brand-700"
+                  >
+                    <option>Jilid 1</option>
+                    <option>Jilid 2</option>
+                    <option>Jilid 3</option>
+                    <option>Jilid 4</option>
+                    <option selected>Jilid 5</option>
+                    <option>Jilid 6</option>
+                    <option>Al-Qur'an / Turjuman</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Halaman / Munaqosah</label
+                  >
+                  <input
+                    type="text"
+                    value="Halaman 20 (Siap Munaqosah)"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Nilai Tajwid & Makhraj</label
+                  >
+                  <select
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
+                  >
+                    <option selected>A (Sangat Baik / Tartil)</option>
+                    <option>B (Baik)</option>
+                    <option>C (Cukup)</option>
+                  </select>
+                </div>
+                <div class="md:col-span-3">
+                  <label
+                    class="block text-xs font-bold text-gray-700 mb-1 uppercase"
+                    >Catatan Pembimbing Ummi</label
+                  >
+                  <input
+                    type="text"
+                    value="Bacaan lancar dan tartil, mad dan ghunnah dibaca secara tepat."
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                onclick="saveDataAlert()"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+              >
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data
+                Al-Qur'an
+              </button>
+            </div>
+          </section>
+
+          <!-- TAB 6: KEHADIRAN & CATATAN WALI KELAS -->
+          <section
+            id="tab-input-kehadiran"
+            class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+          >
+            <div
+              class="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            >
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">
+                  Kehadiran & Catatan Wali Kelas
+                </h3>
+                <p class="text-sm text-gray-500">
+                  Input rekap absensi dan motivasi perkembangan untuk orang tua
+                  murid.
+                </p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Kelas</label
+                  >
+                  <select
+                    id="kehadiran-select-kelas"
+                    onchange="updateKehadiranDropdownSiswa()"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-brand-50 border-brand-300 font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                    <option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option>
+                    <option value="6">Kelas 6</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-[11px] font-bold text-gray-500 uppercase mb-1"
+                    >Pilih Nama Murid</label
+                  >
+                  <select
+                    id="kehadiran-select-siswa"
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 border-gray-300 font-medium focus:ring-2 focus:ring-brand-500 outline-none"
+                  ></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <label
+                  class="block text-xs font-bold text-blue-800 mb-1 uppercase"
+                  ><i class="fa-solid fa-notes-medical mr-1"></i> Sakit
+                  (Hari)</label
+                >
+                <input
+                  type="number"
+                  value="1"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-blue-900"
+                />
+              </div>
+              <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                <label
+                  class="block text-xs font-bold text-amber-800 mb-1 uppercase"
+                  ><i class="fa-solid fa-envelopeOpen mr-1"></i> Izin
+                  (Hari)</label
+                >
+                <input
+                  type="number"
+                  value="1"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-amber-900"
+                />
+              </div>
+              <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                <label
+                  class="block text-xs font-bold text-red-800 mb-1 uppercase"
+                  ><i class="fa-solid fa-user-xmark mr-1"></i> Tanpa
+                  Keterangan</label
+                >
+                <input
+                  type="number"
+                  value="0"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-red-900"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2"
+                >Catatan Perkembangan dari Wali Kelas
+              </label>
+              <textarea
+                rows="4"
+                class="w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                placeholder="Tuliskan apresiasi dan motivasi perkembangan murid..."
+              >
+Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam belajar serta murojaah hafalan. Pertahankan semangat belajar dan adab terhadap orang tua serta guru.</textarea
+              >
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                onclick="saveDataAlert()"
+                class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
+              >
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Kehadiran &
+                Catatan
+              </button>
+            </div>
+          </section>
+
+          <!-- TAB 7: PRATINJAU & CETAK RAPORT -->
+          <section id="tab-cetak-raport" class="hidden space-y-4">
+            <div
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-4"
+            >
+              <div>
+                <h3 class="font-bold text-gray-800">Pratinjau Lembar Raport</h3>
+                <p class="text-xs text-gray-500">
+                  Pilih siswa untuk melihat & mencetak lembar raport.
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5"
+                    >Kelas</label
+                  >
+                  <select
+                    id="cetak-select-kelas"
+                    onchange="updateCetakDropdownSiswa()"
+                    class="px-3 py-1.5 border border-brand-300 rounded-lg text-xs font-bold bg-brand-50 text-brand-800 outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                    <option value="4">Kelas 4</option>
+                    <option value="5">Kelas 5</option>
+                    <option value="6">Kelas 6</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5"
+                    >Nama Siswa</label
+                  >
+                  <select
+                    id="cetak-select-siswa"
+                    onchange="renderPrintableData()"
+                    class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold bg-gray-50 text-gray-800 outline-none focus:ring-2 focus:ring-brand-500"
+                  ></select>
+                </div>
+
+                <div class="self-end pt-2 sm:pt-0">
+                  <button
+                    onclick="cetakRaportPDF()"
+                    class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow flex items-center transition"
+                  >
+                    <i class="fa-solid fa-print mr-1.5"></i> Cetak / Simpan PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="printable-raport"
+              class="relative bg-white p-8 rounded-xl border border-gray-300 text-gray-900 overflow-hidden"
+            >
+              <div
+                class="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+              >
+                <img
+                  src="./image/sbr.png"
+                  alt="Watermark Logo Sekolah Bintang"
+                  class="w-[48rem] h-[48rem] object-contain opacity-30"
+                />
+              </div>
+
+              <div class="relative z-10">
+                <div
+                  class="border-b-4 border-double border-gray-800 pb-3 mb-6 flex items-center justify-between"
+                >
+                  <div class="w-16 h-16 flex items-center justify-center">
+                    <img
+                      src="./image/sbr.png"
+                      alt="Logo Sekolah Bintang"
+                      class="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  <div class="text-center flex-1 px-4">
+                    <h1 class="text-xl font-bold uppercase tracking-wide">
+                      SEKOLAH BINTANG TAHFIDZ AL-QUR'AN
+                    </h1>
+                    <p class="text-xs text-gray-600 italic">
+                      Graha Al-Qadri Jln. Pondok Bambu Batas No 110B RT 01/RW
+                      12, Pondok Bambu, Duren Sawit, Jakarta Timur, Jakarta,
+                      Indonesia. www.yapgi.org | email :
+                      yayasanpeduligenrasiislam@gmail.com
+                    </p>
+                    <p class="text-xs font-semibold text-brand-800">
+                      NPSN: 20109988 | Akreditasi A (Unggul)
+                    </p>
+                  </div>
+                  <div class="w-16"></div>
+                </div>
+
+                <h2
+                  class="text-center text-lg font-bold uppercase underline mb-6"
+                >
+                  Laporan Hasil Belajar Murid (Raport)
+                </h2>
+
+                <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-6">
+                  <div class="flex">
+                    <span class="w-32 font-semibold">Nama Murid</span
+                    ><span id="print-nama-siswa">: -</span>
+                  </div>
+                  <div class="flex">
+                    <span class="w-32 font-semibold">Tahun Ajaran</span
+                    ><span id="print-tahun-ajaran">: 2026/2027</span>
+                  </div>
+                  <div class="flex">
+                    <span class="w-32 font-semibold">NIS / NISN</span
+                    ><span id="print-nisn-siswa">: -</span>
+                  </div>
+                  <div class="flex">
+                    <span class="w-32 font-semibold">Semester</span
+                    ><span id="print-semester">: Ganjil (1)</span>
+                  </div>
+                  <div class="flex">
+                    <span class="w-32 font-semibold">Kelas</span
+                    ><span id="print-kelas-siswa">: -</span>
+                  </div>
+                  <div class="flex">
+                    <span class="w-32 font-semibold">Tanggal Cetak</span
+                    ><span id="print-tanggal-cetak">: 14 Agustus 2026</span>
+                  </div>
+                </div>
+
+                <div class="mb-6">
+                  <h3
+                    class="font-bold text-sm mb-2 border-l-4 border-brand-700 pl-2"
+                  >
+                    A. CAPAIAN AKADEMIK (MATA PELAJARAN)
+                  </h3>
+                  <table
+                    class="w-full text-xs border-collapse border border-gray-400 bg-white/80"
+                  >
+                    <thead>
+                      <tr class="bg-gray-100">
+                        <th class="border border-gray-400 px-2 py-1.5 w-8">
+                          No
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-left"
+                        >
+                          Mata Pelajaran
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 w-16 text-center"
+                        >
+                          Nilai
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-center"
+                        >
+                          Predikat
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-left"
+                        >
+                          Deskripsi Capaian
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="printable-mapel-body"></tbody>
+                  </table>
+                </div>
+
+                <div class="mb-6">
+                  <h3
+                    class="font-bold text-sm mb-2 border-l-4 border-brand-700 pl-2"
+                  >
+                    B. CAPAIAN PROGRAM KE-QUR'ANAN
+                  </h3>
+                  <table
+                    class="w-full text-xs border-collapse border border-gray-400 mb-3 bg-white/80"
+                  >
+                    <thead>
+                      <tr class="bg-gray-100">
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-left w-1/3"
+                        >
+                          Kategori Evaluasi Al-Qur'an
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-left"
+                        >
+                          Hasil / Pencapaian Murid
+                        </th>
+                        <th
+                          class="border border-gray-400 px-2 py-1.5 text-center w-24"
+                        >
+                          Predikat
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td
+                          class="border border-gray-400 px-2 py-1 font-semibold"
+                        >
+                          Ujian Tasmi' Al-Qur'an
+                        </td>
+                        <td class="border border-gray-400 px-2 py-1">
+                          Lulus Tasmi' Juz 30 (Sekali Duduk)
+                        </td>
+                        <td
+                          class="border border-gray-400 px-2 py-1 text-center font-bold text-brand-800"
+                        >
+                          Mumtaz
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="border border-gray-400 px-2 py-1 font-semibold"
+                        >
+                          Capaian Mutqin Hafalan
+                        </td>
+                        <td class="border border-gray-400 px-2 py-1">
+                          Juz 29 (Surah Al-Mulk s.d. Surah Al-Mursalat)
+                        </td>
+                        <td
+                          class="border border-gray-400 px-2 py-1 text-center font-bold"
+                        >
+                          Baik Sekali
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="border border-gray-400 px-2 py-1 font-semibold"
+                        >
+                          Metode Ummi (Jilid 1 - 6)
+                        </td>
+                        <td class="border border-gray-400 px-2 py-1">
+                          Jilid 5 (Halaman 20 - Siap Munaqosah)
+                        </td>
+                        <td
+                          class="border border-gray-400 px-2 py-1 text-center font-bold"
+                        >
+                          A (Tartil)
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6 text-xs">
+                  <div
+                    class="col-span-1 border border-gray-400 p-2 rounded bg-white/80"
+                  >
+                    <p class="font-bold border-b pb-1 mb-1 text-center">
+                      Ketidakhadiran
+                    </p>
+                    <div class="flex justify-between py-0.5">
+                      <span>Sakit:</span><span class="font-bold">1 Hari</span>
+                    </div>
+                    <div class="flex justify-between py-0.5">
+                      <span>Izin:</span><span class="font-bold">1 Hari</span>
+                    </div>
+                    <div class="flex justify-between py-0.5">
+                      <span>Tanpa Keterangan:</span
+                      ><span class="font-bold">0 Hari</span>
+                    </div>
+                  </div>
+                  <div
+                    class="col-span-2 border border-gray-400 p-2 rounded bg-white/80"
+                  >
+                    <p class="font-bold border-b pb-1 mb-1">
+                      Catatan & Pesan Wali Kelas
+                    </p>
+                    <p class="italic text-gray-700">
+                      "Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan
+                      yang sangat baik dalam belajar serta murojaah hafalan.
+                      Pertahankan semangat belajar dan adab terhadap orang tua
+                      serta guru."
+                    </p>
+                  </div>
+                </div>
+
+                <div class="mt-12 pt-4">
+                  <p id="print-titi-mangsa" class="text-right text-xs mb-6">
+                    Diberikan di: Jakarta, 14 Agustus 2026
+                  </p>
+                  <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="flex flex-col justify-between h-28">
+                      <p>Orang Tua / Wali Murid,</p>
+                      <div>
+                        <p class="font-bold underline">
+                          ( .................................... )
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col justify-between h-28">
+                      <p>Wali Kelas,</p>
+                      <div>
+                        <p
+                          id="print-walikelas-nama"
+                          class="font-bold underline"
+                        >
+                          -
+                        </p>
+                        <p
+                          id="print-walikelas-nip"
+                          class="text-[10px] text-gray-500"
+                        >
+                          NIP. -
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col justify-between h-28">
+                      <p>
+                        Mengetahui,<br /><span class="font-semibold"
+                          >Mudir Sekolah Bintang Tahfidz Al-Qur'an</span
+                        >
+                      </p>
+                      <div>
+                        <p id="print-mudir-nama" class="font-bold underline">
+                          Ust. Khoiruddin, S.Si
+                        </p>
+                        <p
+                          id="print-mudir-niy"
+                          class="text-[10px] text-gray-500"
+                        >
+                          NIY. 201501 001
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- File JavaScript Eksternal -->
+    <script src="script.js"></script>
+  </body>
+</html>
