@@ -30,65 +30,75 @@ textarea {
    ATURAN CETAK (PRINT) RAPORT A4
    ========================================================= */
 @media print {
-  /* 1. Atur Pengaturan Kertas Print */
+  /* 1. Atur Ukuran & Margin Kertas A4 */
   @page {
     size: A4 portrait;
-    margin: 1.2cm 1.5cm;
+    margin: 1cm 1.2cm;
   }
 
-  /* 2. Sembunyikan Seluruh Elemen Aplikasi / UI */
+  /* 2. Reset Background & Tampilan Utama Body */
+  html,
   body {
-    background: white !important;
-    color: black !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
+  /* 3. Sembunyikan Seluruh Komponen Antarmuka (UI Navigasi, Header, Sidebar) */
   .no-print,
   header,
   aside,
+  nav,
   button,
   select,
   input,
   textarea,
-  .flex-col,
-  form {
+  #login-view {
     display: none !important;
   }
 
-  /* 3. Sembunyikan elemen utama dari alur dokumen */
+  /* 4. Isolasi Tampilan Menggunakan Visibility (Memastikan Elemen Induk Tetap Terbaca) */
   body * {
     visibility: hidden;
   }
 
-  /* 4. Tampilkan HANYA kontainer Raport dan Anak Elemennya */
+  /* 5. Tampilkan HANYA Kontainer Raport dan Anak Elemennya */
+  #app-view,
+  #tab-cetak-raport,
   #printable-raport,
   #printable-raport * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
-  /* 5. Atur Posisi Raport Agar Pas Di Halaman Kertas */
+  /* 6. Atur Posisi & Skala Rapor Agar Pas 1 Halaman Kertas A4 */
   #printable-raport {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: white !important;
-    color: black !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
     overflow: visible !important;
   }
 
-  /* 6. Memastikan Cetakan Berwarna (Termasuk Watermark & Background Tabel) */
+  /* 7. Pertahankan Warna, Border Tabel & Gambar Watermark */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* 7. Mencegah Pemotongan Baris Tabel & Tanda Tangan */
+  /* 8. Mencegah Baris Tabel Terpotong Antar Halaman */
   table {
     page-break-inside: auto;
+    width: 100% !important;
   }
 
   tr {
@@ -100,7 +110,10 @@ textarea {
     display: table-header-group;
   }
 
-  .break-inside-avoid {
-    page-break-inside: avoid;
+  /* 9. Penyesuaian Garis Border Tabel Saat Dicetak */
+  .border,
+  th,
+  td {
+    border-color: #374151 !important; /* gray-700 */
   }
 }

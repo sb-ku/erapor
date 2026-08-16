@@ -673,7 +673,7 @@ function updateKehadiranDropdownSiswa() {
 
 async function updateCetakDropdownSiswa() {
   await populateSiswaDropdown("cetak-select-kelas", "cetak-select-siswa");
-  renderPrintableData();
+  await renderPrintableData();
 }
 
 /* =========================================================
@@ -730,7 +730,7 @@ async function renderPrintableData() {
   if (!supabase) return;
 
   const rawKelas = document.getElementById("cetak-select-kelas")?.value;
-  const kelasVal = String(rawKelas || "");
+  const kelasVal = String(rawKelas || "").trim();
   const siswaId = document.getElementById("cetak-select-siswa")?.value;
 
   if (!siswaId) {
@@ -738,6 +738,8 @@ async function renderPrintableData() {
     document.getElementById("print-nisn-siswa").textContent = ": -";
     document.getElementById("print-kelas-siswa").textContent =
       `: Kelas ${kelasVal || "-"}`;
+    document.getElementById("print-walikelas-nama").textContent = "-";
+    document.getElementById("print-walikelas-nip").textContent = "NIP. -";
     document.getElementById("printable-mapel-body").innerHTML =
       `<tr><td colspan="5" class="border border-gray-400 px-2 py-2 text-center text-gray-500">Belum ada siswa dipilih</td></tr>`;
     return;
@@ -750,32 +752,33 @@ async function renderPrintableData() {
     .eq("id", siswaId)
     .maybeSingle();
 
-  // 2. Ambil Capaian Tahfidz
+  const targetKelas = s && s.kelas ? String(s.kelas).trim() : kelasVal;
+
+  // 2. Ambil Data Wali Kelas (Pencocokan kelas yang fleksibel)
+  const { data: listWali } = await supabase.from("wali_kelas").select("*");
+  const wali = listWali
+    ? listWali.find((w) => String(w.kelas).trim() === targetKelas)
+    : null;
+
+  // 3. Ambil Capaian Tahfidz
   const { data: tf } = await supabase
     .from("capaian_tahfidz")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
 
-  // 3. Ambil Kehadiran & Catatan
+  // 4. Ambil Kehadiran & Catatan
   const { data: kh } = await supabase
     .from("kehadiran_catatan")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
 
-  // 4. Ambil Data Wali Kelas (Konversi kelasVal ke String secara eksplisit)
-  const { data: wali } = await supabase
-    .from("wali_kelas")
-    .select("*")
-    .eq("kelas", kelasVal)
-    .maybeSingle();
-
   // 5. Ambil Daftar Mata Pelajaran & Nilai Siswa
   const { data: listMapel } = await supabase
     .from("mapel")
     .select("*")
-    .eq("kelas", kelasVal);
+    .eq("kelas", targetKelas);
 
   const { data: listNilai } = await supabase
     .from("nilai_mapel")
@@ -784,11 +787,13 @@ async function renderPrintableData() {
 
   // --- RENDERING IDENTITAS SISWA ---
   if (s) {
-    document.getElementById("print-nama-siswa").textContent = `: ${s.nama}`;
-    document.getElementById("print-nisn-siswa").textContent = `: ${s.nisn}`;
+    document.getElementById("print-nama-siswa").textContent =
+      `: ${s.nama || s.name || "-"}`;
+    document.getElementById("print-nisn-siswa").textContent =
+      `: ${s.nisn || "-"}`;
   }
   document.getElementById("print-kelas-siswa").textContent =
-    `: Kelas ${kelasVal}`;
+    `: Kelas ${targetKelas}`;
   document.getElementById("print-tahun-ajaran").textContent =
     `: ${configRapor.tahunAjaran}`;
   document.getElementById("print-semester").textContent =
@@ -837,7 +842,7 @@ async function renderPrintableData() {
         `;
       });
     } else {
-      mapelBody.innerHTML = `<tr><td colspan="5" class="border border-gray-400 px-2 py-2 text-center text-gray-500">Belum ada mata pelajaran terdaftar untuk Kelas ${kelasVal}</td></tr>`;
+      mapelBody.innerHTML = `<tr><td colspan="5" class="border border-gray-400 px-2 py-2 text-center text-gray-500">Belum ada mata pelajaran terdaftar untuk Kelas ${targetKelas}</td></tr>`;
     }
   }
 
@@ -879,9 +884,14 @@ async function renderPrintableData() {
   }
 }
 
-function cetakRaportPDF() {
+async function cetakRaportPDF() {
   switchTab("cetak-raport");
-  setTimeout(() => window.print(), 300);
+  await renderPrintableData();
+
+  // Beri jeda agar browser memuat DOM secara sempurna sebelum membuka dialog cetak
+  setTimeout(() => {
+    window.print();
+  }, 500);
 }
 
 function saveDataAlert() {
