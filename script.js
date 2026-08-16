@@ -74,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Tambahkan event listener agar saat pilihan Nama Siswa diganti, data langsung diperbarui
   const selectSiswaCetak = document.getElementById("cetak-select-siswa");
   if (selectSiswaCetak) {
     selectSiswaCetak.addEventListener("change", renderPrintableData);
@@ -321,7 +320,7 @@ async function renderDashboard() {
 
       for (let k = 1; k <= 6; k++) {
         const wali = listWali
-          ? listWali.find((w) => w.kelas === String(k))
+          ? listWali.find((w) => String(w.kelas) === String(k))
           : null;
         const namaWali = wali ? wali.nama : "Belum ditentukan";
 
@@ -349,11 +348,11 @@ async function renderDashboard() {
     const { count: countSiswaKls } = await supabase
       .from("siswa")
       .select("*", { count: "exact", head: true })
-      .eq("kelas", kelasWali);
+      .eq("kelas", String(kelasWali));
     const { count: countMapelKls } = await supabase
       .from("mapel")
       .select("*", { count: "exact", head: true })
-      .eq("kelas", kelasWali);
+      .eq("kelas", String(kelasWali));
 
     const elWaliSiswa = document.getElementById("dash-wali-total-siswa");
     const elWaliMapel = document.getElementById("dash-wali-total-mapel");
@@ -401,7 +400,7 @@ function lockKelasDropdowns(kelas) {
   ].forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
-      el.value = kelas;
+      el.value = String(kelas);
       el.disabled = true;
       el.classList.add("bg-gray-100");
     }
@@ -431,7 +430,7 @@ async function renderTabelSiswa() {
   const selectKelas = document.getElementById("tambah-siswa-kelas");
   if (!tbody || !selectKelas || !supabase) return;
 
-  const kelasVal = selectKelas.value;
+  const kelasVal = String(selectKelas.value);
   const { data: listSiswa, error } = await supabase
     .from("siswa")
     .select("*")
@@ -463,7 +462,7 @@ async function tambahSiswa(e) {
   e.preventDefault();
   if (!supabase) return;
 
-  const kelas = document.getElementById("tambah-siswa-kelas").value;
+  const kelas = String(document.getElementById("tambah-siswa-kelas").value);
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const nama = document.getElementById("tambah-siswa-nama").value.trim();
 
@@ -541,7 +540,7 @@ async function simpanWaliKelas(e) {
   e.preventDefault();
   if (!supabase) return;
 
-  const kelas = document.getElementById("walikelas-kelas").value;
+  const kelas = String(document.getElementById("walikelas-kelas").value);
   const nip = document.getElementById("walikelas-nip").value.trim();
   const nama = document.getElementById("walikelas-nama").value.trim();
   const username = document.getElementById("walikelas-username").value.trim();
@@ -577,7 +576,7 @@ async function renderTabelKelolaMapel() {
   const selectKelas = document.getElementById("tambah-mapel-kelas");
   if (!tbody || !selectKelas || !supabase) return;
 
-  const kelasVal = selectKelas.value;
+  const kelasVal = String(selectKelas.value);
   const { data: listMapel } = await supabase
     .from("mapel")
     .select("*")
@@ -608,7 +607,7 @@ async function tambahMapelBaru(e) {
   e.preventDefault();
   if (!supabase) return;
 
-  const kelas = document.getElementById("tambah-mapel-kelas").value;
+  const kelas = String(document.getElementById("tambah-mapel-kelas").value);
   const name = document.getElementById("tambah-mapel-nama").value.trim();
   const value_default = document.getElementById("tambah-mapel-nilai").value;
   const desc_default = document
@@ -640,7 +639,7 @@ async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
   const siswaSelect = document.getElementById(selectSiswaId);
   if (!kelasSelect || !siswaSelect || !supabase) return;
 
-  const kelasVal = kelasSelect.value;
+  const kelasVal = String(kelasSelect.value);
   const { data: listSiswa } = await supabase
     .from("siswa")
     .select("*")
@@ -669,7 +668,7 @@ function updateKehadiranDropdownSiswa() {
 
 async function updateCetakDropdownSiswa() {
   await populateSiswaDropdown("cetak-select-kelas", "cetak-select-siswa");
-  renderPrintableData(); // Otomatis trigger render rapor saat kelas diganti
+  renderPrintableData();
 }
 
 /* =========================================================
@@ -725,10 +724,10 @@ async function simpanKehadiranCatatan(e) {
 async function renderPrintableData() {
   if (!supabase) return;
 
-  const kelasVal = document.getElementById("cetak-select-kelas")?.value;
+  const rawKelas = document.getElementById("cetak-select-kelas")?.value;
+  const kelasVal = String(rawKelas || "");
   const siswaId = document.getElementById("cetak-select-siswa")?.value;
 
-  // Reset jika belum ada siswa terdaftar pada kelas tersebut
   if (!siswaId) {
     document.getElementById("print-nama-siswa").textContent = ": -";
     document.getElementById("print-nisn-siswa").textContent = ": -";
@@ -760,7 +759,7 @@ async function renderPrintableData() {
     .eq("siswa_id", siswaId)
     .maybeSingle();
 
-  // 4. Ambil Data Wali Kelas
+  // 4. Ambil Data Wali Kelas (Konversi kelasVal ke String secara eksplisit)
   const { data: wali } = await supabase
     .from("wali_kelas")
     .select("*")
@@ -798,9 +797,8 @@ async function renderPrintableData() {
   document.getElementById("print-walikelas-nama").textContent = wali
     ? wali.nama
     : "-";
-  document.getElementById("print-walikelas-nip").textContent = wali
-    ? `NIP. ${wali.nip}`
-    : "NIP. -";
+  document.getElementById("print-walikelas-nip").textContent =
+    wali && wali.nip ? `NIP. ${wali.nip}` : "NIP. -";
   document.getElementById("print-mudir-nama").textContent =
     configRapor.namaMudir;
   document.getElementById("print-mudir-niy").textContent =
@@ -816,7 +814,7 @@ async function renderPrintableData() {
           ? listNilai.find((n) => n.mapel_id === m.id)
           : null;
         const nilaiAngka = nil ? nil.nilai : m.value_default || 0;
-        const deskripsi = nil ? nil.deskripsi : m.desc_default || "-";
+        const deskripsi = nil ? nil.desc_default : m.desc_default || "-";
 
         let predikat = "C";
         if (nilaiAngka >= 90) predikat = "A (Sangat Baik)";
