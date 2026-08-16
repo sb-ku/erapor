@@ -1,13 +1,14 @@
 /* =========================================================
    Logic Application eRapor SD Tahfidz Bintang Al-Qur'an
-   Inisialisasi Client Database Supabase
+   Inisialisasi Client Database Supabase Safe-Loader
    ========================================================= */
 const SUPABASE_URL = "https://hidhczsmctknmrcivveb.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpZGhjenNtY3Rrbm1yY2l2dmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MzE1NzgsImV4cCI6MjEwMjQwNzU3OH0.llcQd90L7GVmQAY2mk3B6LkXYi85M1h1Qqc0DZOQWuM";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// State Pengaturan Rapor
+let supabase;
+
+// State Pengaturan Rapor Default
 let configRapor = {
   tahunAjaran: "2026/2027",
   semester: "Ganjil (1)",
@@ -20,6 +21,15 @@ let currentRole = "walikelas";
 let loggedInWaliKelas = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Pastikan SDK Supabase sudah siap sebelum digunakan
+  if (window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.error("SDK Supabase belum terisi di HTML!");
+    alert("Gagal memuat SDK Supabase. Pastikan koneksi internet stabil.");
+    return;
+  }
+
   checkLoginSession();
   loadPengaturanRapor();
 });
@@ -32,7 +42,7 @@ async function loadPengaturanRapor() {
     .from("pengaturan_rapor")
     .select("*")
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (!error && data) {
     configRapor = {
@@ -72,7 +82,7 @@ async function simpanSettingRapor(e) {
     .from("pengaturan_rapor")
     .select("id")
     .limit(1)
-    .single();
+    .maybeSingle();
 
   let res;
   if (checkData) {
@@ -182,7 +192,7 @@ async function handleLogin(e) {
       .select("*")
       .or(`username.eq.${usernameInput},nip.eq.${usernameInput}`)
       .eq("password", passwordInput)
-      .single();
+      .maybeSingle();
 
     if (wali && !error) {
       localStorage.setItem("isLoggedIn", "true");
@@ -414,25 +424,37 @@ async function tambahSiswa(e) {
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const name = document.getElementById("tambah-siswa-nama").value.trim();
 
-  const { error } = await supabase
+  // Pengiriman data ke Supabase dengan pencatatan Log Error
+  const { data, error } = await supabase
     .from("siswa")
     .insert([{ kelas, nisn, name }]);
 
   if (error) {
+    console.error("Gagal simpan ke Supabase:", error);
     alert(`Gagal menambah siswa: ${error.message}`);
   } else {
-    alert(`Alhamdulillah! Siswa (${name}) berhasil ditambahkan.`);
+    alert(`Alhamdulillah! Siswa (${name}) berhasil ditambahkan ke Supabase.`);
     document.getElementById("tambah-siswa-nisn").value = "";
     document.getElementById("tambah-siswa-nama").value = "";
+
+    // Refresh Tampilan Tabel & Dropdown Terkait
     renderTabelSiswa();
+    updateDropdownSiswa();
+    updateTahfidzDropdownSiswa();
+    updateKehadiranDropdownSiswa();
+    updateCetakDropdownSiswa();
   }
 }
 
 async function hapusSiswa(id) {
   if (confirm("Apakah Anda yakin ingin menghapus siswa ini?")) {
     const { error } = await supabase.from("siswa").delete().eq("id", id);
-    if (!error) renderTabelSiswa();
-    else alert(`Gagal menghapus: ${error.message}`);
+    if (!error) {
+      renderTabelSiswa();
+      updateDropdownSiswa();
+    } else {
+      alert(`Gagal menghapus: ${error.message}`);
+    }
   }
 }
 
@@ -578,10 +600,12 @@ async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
     .order("name", { ascending: true });
 
   siswaSelect.innerHTML = "";
-  if (listSiswa) {
+  if (listSiswa && listSiswa.length > 0) {
     listSiswa.forEach((s) => {
       siswaSelect.innerHTML += `<option value="${s.id}">${s.name} (NISN: ${s.nisn})</option>`;
     });
+  } else {
+    siswaSelect.innerHTML = `<option value="">-- Belum ada data --</option>`;
   }
 }
 
@@ -653,22 +677,22 @@ async function renderPrintableData() {
     .from("siswa")
     .select("*")
     .eq("id", siswaId)
-    .single();
+    .maybeSingle();
   const { data: tf } = await supabase
     .from("capaian_tahfidz")
     .select("*")
     .eq("siswa_id", siswaId)
-    .single();
+    .maybeSingle();
   const { data: kh } = await supabase
     .from("kehadiran_catatan")
     .select("*")
     .eq("siswa_id", siswaId)
-    .single();
+    .maybeSingle();
   const { data: wali } = await supabase
     .from("wali_kelas")
     .select("*")
     .eq("kelas", kelasVal)
-    .single();
+    .maybeSingle();
 
   if (s) {
     document.getElementById("print-nama-siswa").textContent = `: ${s.name}`;
