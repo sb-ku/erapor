@@ -6,7 +6,8 @@ const SUPABASE_URL = "https://hidhczsmctknmrcivveb.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpZGhjenNtY3Rrbm1yY2l2dmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MzE1NzgsImV4cCI6MjEwMjQwNzU3OH0.llcQd90L7GVmQAY2mk3B6LkXYi85M1h1Qqc0DZOQWuM";
 
-let supabase;
+// Cegah Uncaught SyntaxError karena re-deklarasi variabel
+var supabase = supabase || null;
 
 // State Pengaturan Rapor Default
 let configRapor = {
@@ -20,9 +21,29 @@ let configRapor = {
 let currentRole = "walikelas";
 let loggedInWaliKelas = null;
 
-// Registrasi Fungsi Global untuk Event Handler HTML (Termasuk Touch Screen HP)
-window.setRole = setRole;
-window.switchRole = setRole;
+// Daftarkan fungsi setRole ke Window secara langsung sebelum eksekusi lain
+window.setRole = function (role) {
+  currentRole = role;
+  const btnWali = document.getElementById("btn-role-walikelas");
+  const btnAdmin = document.getElementById("btn-role-admin");
+
+  if (!btnWali || !btnAdmin) return;
+
+  if (role === "walikelas") {
+    btnWali.className =
+      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
+    btnAdmin.className =
+      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
+  } else {
+    btnAdmin.className =
+      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
+    btnWali.className =
+      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
+  }
+};
+window.switchRole = window.setRole;
+
+// Registrasi Fungsi Global Lainnya
 window.handleLogin = handleLogin;
 window.logout = logout;
 window.switchTab = switchTab;
@@ -45,10 +66,9 @@ window.cetakRaportPDF = cetakRaportPDF;
 window.saveDataAlert = saveDataAlert;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Pastikan SDK Supabase terinisialisasi dengan aman
-  if (window.supabase && window.supabase.createClient) {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } else {
+  } else if (!supabase) {
     console.error("SDK Supabase belum terisi di HTML!");
     alert("Gagal memuat SDK Supabase. Pastikan koneksi internet stabil.");
     return;
@@ -255,26 +275,6 @@ function toggleSubMenuInput() {
   const arrow = document.getElementById("icon-submenu-arrow");
   if (container) container.classList.toggle("hidden");
   if (arrow) arrow.classList.toggle("rotate-180");
-}
-
-function setRole(role) {
-  currentRole = role;
-  const btnWali = document.getElementById("btn-role-walikelas");
-  const btnAdmin = document.getElementById("btn-role-admin");
-
-  if (!btnWali || !btnAdmin) return;
-
-  if (role === "walikelas") {
-    btnWali.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
-    btnAdmin.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
-  } else {
-    btnAdmin.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-brand-700 transition cursor-pointer select-none";
-    btnWali.className =
-      "flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition cursor-pointer select-none";
-  }
 }
 
 async function renderDashboard() {
