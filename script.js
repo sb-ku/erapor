@@ -675,7 +675,7 @@ async function renderTabelInputMapel() {
       ? nil.nilai
       : (m.value_default ?? m.nilai_default ?? 85);
     const deskripsi = nil
-      ? nil.desc_default
+      ? (nil.desc_default ?? nil.deskripsi_default ?? nil.deskripsi)
       : (m.desc_default ?? m.deskripsi_default ?? "");
 
     tbody.innerHTML += `
@@ -704,7 +704,7 @@ async function renderTabelInputMapel() {
   });
 }
 
-// Simpan seluruh nilai mapel siswa ke Supabase
+// Simpan seluruh nilai mapel siswa ke Supabase (Mendukung fallback nama kolom deskripsi)
 async function simpanNilaiMapel() {
   const sb = getSupabase();
   const selectSiswa = document.getElementById("select-siswa");
@@ -724,18 +724,48 @@ async function simpanNilaiMapel() {
     const descInput = row.querySelector(".input-nilai-desc");
 
     if (mapel_id && nilaiInput) {
+      const valDesc = descInput ? descInput.value.trim() : "";
       records.push({
         siswa_id: siswaId,
         mapel_id: mapel_id,
         nilai: parseInt(nilaiInput.value, 10) || 0,
-        desc_default: descInput ? descInput.value.trim() : "",
+        deskripsi_default: valDesc,
       });
     }
   });
 
-  const { error } = await sb
+  // Percobaan simpan 1: Menggunakan kolom 'deskripsi_default'
+  let { error } = await sb
     .from("nilai_mapel")
     .upsert(records, { onConflict: "siswa_id,mapel_id" });
+
+  // Fallback 1: Jika kolom 'deskripsi_default' tidak ada, coba kolom 'desc_default'
+  if (error && error.message.includes("desc_default")) {
+    const fallbackRecords1 = records.map((r) => ({
+      siswa_id: r.siswa_id,
+      mapel_id: r.mapel_id,
+      nilai: r.nilai,
+      desc_default: r.deskripsi_default,
+    }));
+    const res1 = await sb
+      .from("nilai_mapel")
+      .upsert(fallbackRecords1, { onConflict: "siswa_id,mapel_id" });
+    error = res1.error;
+  }
+
+  // Fallback 2: Jika gagal lagi, coba kolom 'deskripsi'
+  if (error && error.message.includes("deskripsi")) {
+    const fallbackRecords2 = records.map((r) => ({
+      siswa_id: r.siswa_id,
+      mapel_id: r.mapel_id,
+      nilai: r.nilai,
+      deskripsi: r.deskripsi_default,
+    }));
+    const res2 = await sb
+      .from("nilai_mapel")
+      .upsert(fallbackRecords2, { onConflict: "siswa_id,mapel_id" });
+    error = res2.error;
+  }
 
   if (error) {
     alert(`Gagal menyimpan nilai: ${error.message}`);
@@ -979,7 +1009,7 @@ async function renderPrintableData() {
           ? nil.nilai
           : m.value_default || m.nilai_default || 0;
         const deskripsi = nil
-          ? nil.desc_default
+          ? nil.desc_default || nil.deskripsi_default || nil.deskripsi
           : m.desc_default || m.deskripsi_default || "-";
 
         let predikat = "C";
