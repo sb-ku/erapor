@@ -278,8 +278,13 @@ function logout() {
 function toggleSubMenuInput() {
   const container = document.getElementById("submenu-input-container");
   const arrow = document.getElementById("icon-submenu-arrow");
-  if (container) container.classList.toggle("hidden");
-  if (arrow) arrow.classList.toggle("rotate-180");
+
+  if (container) {
+    container.classList.toggle("hidden");
+  }
+  if (arrow) {
+    arrow.classList.toggle("rotate-180");
+  }
 }
 
 async function renderDashboard() {
