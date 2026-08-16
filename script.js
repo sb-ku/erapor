@@ -53,10 +53,8 @@ window.setRole = function (role) {
 };
 window.switchRole = window.setRole;
 
-function saveDataAlert() {
-  alert("Alhamdulillah! Data berhasil disimpan.");
-}
-window.saveDataAlert = saveDataAlert;
+window.saveDataAlert = simpanNilaiMapel;
+window.simpanNilaiMapel = simpanNilaiMapel;
 
 window.handleLogin = handleLogin;
 window.logout = logout;
@@ -69,6 +67,7 @@ window.renderTabelSiswa = renderTabelSiswa;
 window.simpanWaliKelas = simpanWaliKelas;
 window.hapusWaliKelas = hapusWaliKelas;
 window.renderTabelKelolaMapel = renderTabelKelolaMapel;
+window.renderTabelInputMapel = renderTabelInputMapel;
 window.tambahMapelBaru = tambahMapelBaru;
 window.hapusMapel = hapusMapel;
 window.updateDropdownSiswa = updateDropdownSiswa;
@@ -91,6 +90,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectSiswaCetak = document.getElementById("cetak-select-siswa");
   if (selectSiswaCetak) {
     selectSiswaCetak.addEventListener("change", renderPrintableData);
+  }
+
+  const selectSiswaInput = document.getElementById("select-siswa");
+  if (selectSiswaInput) {
+    selectSiswaInput.addEventListener("change", renderTabelInputMapel);
   }
 
   checkLoginSession();
@@ -488,7 +492,6 @@ async function tambahSiswa(e) {
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const nama = document.getElementById("tambah-siswa-nama").value.trim();
 
-  // Simpan nilai kelas sebagai Integer & String fallback
   const kelas = parseInt(kelasInput, 10);
 
   const { error } = await sb.from("siswa").insert([{ kelas, nisn, nama }]);
@@ -595,7 +598,7 @@ async function hapusWaliKelas(id) {
 }
 
 /* =========================================================
-   6. MANAJEMEN MAPEL & NILAI (TABEL: mapel & nilai_mapel)
+   6. MANAJEMEN MAPEL & INPUT NILAI (TABEL: mapel & nilai_mapel)
    ========================================================= */
 async function renderTabelKelolaMapel() {
   const tbody = document.getElementById("table-kelola-mapel-body");
@@ -605,7 +608,6 @@ async function renderTabelKelolaMapel() {
 
   const kelasVal = selectKelas.value;
 
-  // Pencarian flexibel dengan String dan Integer
   const { data: listMapel, error } = await sb
     .from("mapel")
     .select("*")
@@ -635,6 +637,113 @@ async function renderTabelKelolaMapel() {
   });
 }
 
+// Render tabel input nilai mapel berdasarkan kelas & siswa terpilih
+async function renderTabelInputMapel() {
+  const tbody = document.getElementById("table-mapel-body");
+  const selectKelas = document.getElementById("select-kelas");
+  const selectSiswa = document.getElementById("select-siswa");
+  const sb = getSupabase();
+  if (!tbody || !selectKelas || !sb) return;
+
+  const kelasVal = selectKelas.value;
+  const siswaId = selectSiswa?.value;
+
+  const { data: listMapel, error: errMapel } = await sb
+    .from("mapel")
+    .select("*")
+    .or(`kelas.eq.${kelasVal},kelas.eq.${parseInt(kelasVal, 10)}`)
+    .order("id", { ascending: true });
+
+  tbody.innerHTML = "";
+  if (errMapel || !listMapel || listMapel.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-center text-gray-400">Belum ada mata pelajaran terdaftar untuk Kelas ${kelasVal}. Tambahkan dahulu di menu Kelola Mapel.</td></tr>`;
+    return;
+  }
+
+  let listNilai = [];
+  if (siswaId) {
+    const { data: dataNilai } = await sb
+      .from("nilai_mapel")
+      .select("*")
+      .eq("siswa_id", siswaId);
+    if (dataNilai) listNilai = dataNilai;
+  }
+
+  listMapel.forEach((m, index) => {
+    const nil = listNilai.find((n) => String(n.mapel_id) === String(m.id));
+    const nilaiAngka = nil
+      ? nil.nilai
+      : (m.value_default ?? m.nilai_default ?? 85);
+    const deskripsi = nil
+      ? nil.desc_default
+      : (m.desc_default ?? m.deskripsi_default ?? "");
+
+    tbody.innerHTML += `
+      <tr class="hover:bg-gray-50 transition border-b border-gray-100" data-mapel-id="${m.id}">
+        <td class="px-4 py-3 font-semibold text-gray-500 text-center">${index + 1}</td>
+        <td class="px-4 py-3 font-bold text-gray-800">${m.name || m.nama_mapel}</td>
+        <td class="px-4 py-3 text-center w-32">
+          <input 
+            type="number" 
+            min="0" 
+            max="100" 
+            value="${nilaiAngka}" 
+            class="input-nilai-angka w-20 px-2 py-1 text-center font-bold text-brand-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" 
+          />
+        </td>
+        <td class="px-4 py-3">
+          <input 
+            type="text" 
+            value="${deskripsi}" 
+            placeholder="Capaian kompetensi..." 
+            class="input-nilai-desc w-full px-3 py-1 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" 
+          />
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// Simpan seluruh nilai mapel siswa ke Supabase
+async function simpanNilaiMapel() {
+  const sb = getSupabase();
+  const selectSiswa = document.getElementById("select-siswa");
+  const siswaId = selectSiswa?.value;
+
+  if (!sb) return;
+  if (!siswaId) return alert("Pilih nama murid terlebih dahulu!");
+
+  const rows = document.querySelectorAll("#table-mapel-body tr[data-mapel-id]");
+  if (rows.length === 0)
+    return alert("Tidak ada mata pelajaran untuk disimpan!");
+
+  const records = [];
+  rows.forEach((row) => {
+    const mapel_id = row.getAttribute("data-mapel-id");
+    const nilaiInput = row.querySelector(".input-nilai-angka");
+    const descInput = row.querySelector(".input-nilai-desc");
+
+    if (mapel_id && nilaiInput) {
+      records.push({
+        siswa_id: siswaId,
+        mapel_id: mapel_id,
+        nilai: parseInt(nilaiInput.value, 10) || 0,
+        desc_default: descInput ? descInput.value.trim() : "",
+      });
+    }
+  });
+
+  const { error } = await sb
+    .from("nilai_mapel")
+    .upsert(records, { onConflict: "siswa_id,mapel_id" });
+
+  if (error) {
+    alert(`Gagal menyimpan nilai: ${error.message}`);
+  } else {
+    alert("Alhamdulillah! Nilai mata pelajaran berhasil disimpan ke Supabase.");
+  }
+}
+
 async function tambahMapelBaru(e) {
   e.preventDefault();
   const sb = getSupabase();
@@ -648,7 +757,6 @@ async function tambahMapelBaru(e) {
     .getElementById("tambah-mapel-desc")
     .value.trim();
 
-  // Simpan nilai kelas sebagai Integer
   const kelas = parseInt(kelasInput, 10);
 
   const { error } = await sb
@@ -701,8 +809,9 @@ async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
   }
 }
 
-function updateDropdownSiswa() {
-  populateSiswaDropdown("select-kelas", "select-siswa");
+async function updateDropdownSiswa() {
+  await populateSiswaDropdown("select-kelas", "select-siswa");
+  await renderTabelInputMapel();
 }
 function updateTahfidzDropdownSiswa() {
   populateSiswaDropdown("tahfidz-select-kelas", "tahfidz-select-siswa");
