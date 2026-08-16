@@ -32,6 +32,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
 
+    <!-- Supabase JS Client Library SDK v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- File CSS Eksternal -->
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -1016,6 +1019,7 @@
                   >
                   <input
                     type="text"
+                    id="tahfidz-ujian-tasmi"
                     value="Lulus Tasmi' Juz 30 (Sekali Duduk)"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
                   />
@@ -1026,12 +1030,17 @@
                     >Predikat Nilai Tasmi'</label
                   >
                   <select
+                    id="tahfidz-predikat-tasmi"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
                   >
-                    <option selected>Mumtaz (Sangat Baik)</option>
-                    <option>Jayyid Jiddan (Baik Sekali)</option>
-                    <option>Jayyid (Baik)</option>
-                    <option>Maqbul (Cukup)</option>
+                    <option value="Mumtaz (Sangat Baik)" selected>
+                      Mumtaz (Sangat Baik)
+                    </option>
+                    <option value="Jayyid Jiddan (Baik Sekali)">
+                      Jayyid Jiddan (Baik Sekali)
+                    </option>
+                    <option value="Jayyid (Baik)">Jayyid (Baik)</option>
+                    <option value="Maqbul (Cukup)">Maqbul (Cukup)</option>
                   </select>
                 </div>
                 <div class="md:col-span-2">
@@ -1041,6 +1050,7 @@
                   >
                   <input
                     type="text"
+                    id="tahfidz-capaian-hafalan"
                     value="Juz 29 (Surah Al-Mulk s.d. Surah Al-Mursalat)"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
                   />
@@ -1063,15 +1073,18 @@
                     >Jilid Ummi Aktif</label
                   >
                   <select
+                    id="ummi-jilid"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold text-brand-700"
                   >
-                    <option>Jilid 1</option>
-                    <option>Jilid 2</option>
-                    <option>Jilid 3</option>
-                    <option>Jilid 4</option>
-                    <option selected>Jilid 5</option>
-                    <option>Jilid 6</option>
-                    <option>Al-Qur'an / Turjuman</option>
+                    <option value="Jilid 1">Jilid 1</option>
+                    <option value="Jilid 2">Jilid 2</option>
+                    <option value="Jilid 3">Jilid 3</option>
+                    <option value="Jilid 4">Jilid 4</option>
+                    <option value="Jilid 5" selected>Jilid 5</option>
+                    <option value="Jilid 6">Jilid 6</option>
+                    <option value="Al-Qur'an / Turjuman">
+                      Al-Qur'an / Turjuman
+                    </option>
                   </select>
                 </div>
                 <div>
@@ -1081,6 +1094,7 @@
                   >
                   <input
                     type="text"
+                    id="ummi-halaman"
                     value="Halaman 20 (Siap Munaqosah)"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
                   />
@@ -1091,11 +1105,14 @@
                     >Nilai Tajwid & Makhraj</label
                   >
                   <select
+                    id="ummi-nilai-tajwid"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
                   >
-                    <option selected>A (Sangat Baik / Tartil)</option>
-                    <option>B (Baik)</option>
-                    <option>C (Cukup)</option>
+                    <option value="A (Sangat Baik / Tartil)" selected>
+                      A (Sangat Baik / Tartil)
+                    </option>
+                    <option value="B (Baik)">B (Baik)</option>
+                    <option value="C (Cukup)">C (Cukup)</option>
                   </select>
                 </div>
                 <div class="md:col-span-3">
@@ -1105,6 +1122,7 @@
                   >
                   <input
                     type="text"
+                    id="ummi-catatan"
                     value="Bacaan lancar dan tartil, mad dan ghunnah dibaca secara tepat."
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white"
                   />
@@ -1114,7 +1132,7 @@
 
             <div class="flex justify-end">
               <button
-                onclick="saveDataAlert()"
+                onclick="simpanCapaianTahfidz(event)"
                 class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
               >
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data
@@ -1183,6 +1201,7 @@
                 >
                 <input
                   type="number"
+                  id="kehadiran-sakit"
                   value="1"
                   min="0"
                   class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-blue-900"
@@ -1196,6 +1215,7 @@
                 >
                 <input
                   type="number"
+                  id="kehadiran-izin"
                   value="1"
                   min="0"
                   class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-amber-900"
@@ -1209,6 +1229,7 @@
                 >
                 <input
                   type="number"
+                  id="kehadiran-alpa"
                   value="0"
                   min="0"
                   class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-bold text-red-900"
@@ -1221,6 +1242,7 @@
                 >Catatan Perkembangan dari Wali Kelas
               </label>
               <textarea
+                id="catatan-wali-kelas"
                 rows="4"
                 class="w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none"
                 placeholder="Tuliskan apresiasi dan motivasi perkembangan murid..."
@@ -1231,7 +1253,7 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
 
             <div class="flex justify-end">
               <button
-                onclick="saveDataAlert()"
+                onclick="simpanKehadiranCatatan(event)"
                 class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-lg shadow transition"
               >
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Kehadiran &
@@ -1445,10 +1467,14 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                         >
                           Ujian Tasmi' Al-Qur'an
                         </td>
-                        <td class="border border-gray-400 px-2 py-1">
+                        <td
+                          id="print-tahfidz-ujian"
+                          class="border border-gray-400 px-2 py-1"
+                        >
                           Lulus Tasmi' Juz 30 (Sekali Duduk)
                         </td>
                         <td
+                          id="print-tahfidz-predikat"
                           class="border border-gray-400 px-2 py-1 text-center font-bold text-brand-800"
                         >
                           Mumtaz
@@ -1460,7 +1486,10 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                         >
                           Capaian Mutqin Hafalan
                         </td>
-                        <td class="border border-gray-400 px-2 py-1">
+                        <td
+                          id="print-tahfidz-hafalan"
+                          class="border border-gray-400 px-2 py-1"
+                        >
                           Juz 29 (Surah Al-Mulk s.d. Surah Al-Mursalat)
                         </td>
                         <td
@@ -1475,10 +1504,14 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                         >
                           Metode Ummi (Jilid 1 - 6)
                         </td>
-                        <td class="border border-gray-400 px-2 py-1">
+                        <td
+                          id="print-ummi-jilid-hal"
+                          class="border border-gray-400 px-2 py-1"
+                        >
                           Jilid 5 (Halaman 20 - Siap Munaqosah)
                         </td>
                         <td
+                          id="print-ummi-tajwid"
                           class="border border-gray-400 px-2 py-1 text-center font-bold"
                         >
                           A (Tartil)
@@ -1496,14 +1529,22 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                       Ketidakhadiran
                     </p>
                     <div class="flex justify-between py-0.5">
-                      <span>Sakit:</span><span class="font-bold">1 Hari</span>
+                      <span>Sakit:</span
+                      ><span id="print-absen-sakit" class="font-bold"
+                        >1 Hari</span
+                      >
                     </div>
                     <div class="flex justify-between py-0.5">
-                      <span>Izin:</span><span class="font-bold">1 Hari</span>
+                      <span>Izin:</span
+                      ><span id="print-absen-izin" class="font-bold"
+                        >1 Hari</span
+                      >
                     </div>
                     <div class="flex justify-between py-0.5">
                       <span>Tanpa Keterangan:</span
-                      ><span class="font-bold">0 Hari</span>
+                      ><span id="print-absen-alpa" class="font-bold"
+                        >0 Hari</span
+                      >
                     </div>
                   </div>
                   <div
@@ -1512,7 +1553,7 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
                     <p class="font-bold border-b pb-1 mb-1">
                       Catatan & Pesan Wali Kelas
                     </p>
-                    <p class="italic text-gray-700">
+                    <p id="print-catatan-wali" class="italic text-gray-700">
                       "Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan
                       yang sangat baik dalam belajar serta murojaah hafalan.
                       Pertahankan semangat belajar dan adab terhadap orang tua
