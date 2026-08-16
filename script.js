@@ -885,15 +885,20 @@ async function renderPrintableData() {
 }
 
 async function cetakRaportPDF() {
+  // 1. Pindah ke tab cetak
   switchTab("cetak-raport");
+
+  // 2. Render ulang data siswa
   await renderPrintableData();
 
-  // Beri jeda agar browser memuat DOM secara sempurna sebelum membuka dialog cetak
+  // 3. Lepaskan class hidden secara manual dari elemen tab cetak
+  const tabCetak = document.getElementById("tab-cetak-raport");
+  if (tabCetak) {
+    tabCetak.classList.remove("hidden");
+  }
+
+  // 4. Jeda sebentar agar browser selesai melakukan render DOM
   setTimeout(() => {
     window.print();
-  }, 500);
-}
-
-function saveDataAlert() {
-  alert("Alhamdulillah! Data berhasil diperbarui.");
+  }, 400);
 }
