@@ -6,8 +6,19 @@ const SUPABASE_URL = "https://hidhczsmctknmrcivveb.supabase.co";
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpZGhjenNtY3Rrbm1yY2l2dmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MzE1NzgsImV4cCI6MjEwMjQwNzU3OH0.llcQd90L7GVmQAY2mk3B6LkXYi85M1h1Qqc0DZOQWuM";
 
-// Cegah Uncaught SyntaxError karena re-deklarasi variabel
-var supabase = supabase || null;
+// Inisialisasi Instance Supabase Client
+let supabaseClient = null;
+
+function getSupabase() {
+  if (
+    !supabaseClient &&
+    window.supabase &&
+    typeof window.supabase.createClient === "function"
+  ) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+  return supabaseClient;
+}
 
 // State Pengaturan Rapor Default
 let configRapor = {
@@ -21,12 +32,11 @@ let configRapor = {
 let currentRole = "walikelas";
 let loggedInWaliKelas = null;
 
-// Daftarkan fungsi setRole ke Window secara langsung sebelum eksekusi lain
+// Registrasi Fungsi Global
 window.setRole = function (role) {
   currentRole = role;
   const btnWali = document.getElementById("btn-role-walikelas");
   const btnAdmin = document.getElementById("btn-role-admin");
-
   if (!btnWali || !btnAdmin) return;
 
   if (role === "walikelas") {
@@ -43,7 +53,11 @@ window.setRole = function (role) {
 };
 window.switchRole = window.setRole;
 
-// Registrasi Fungsi Global Lainnya
+function saveDataAlert() {
+  alert("Alhamdulillah! Data berhasil disimpan.");
+}
+window.saveDataAlert = saveDataAlert;
+
 window.handleLogin = handleLogin;
 window.logout = logout;
 window.switchTab = switchTab;
@@ -51,6 +65,7 @@ window.toggleSubMenuInput = toggleSubMenuInput;
 window.simpanSettingRapor = simpanSettingRapor;
 window.tambahSiswa = tambahSiswa;
 window.hapusSiswa = hapusSiswa;
+window.renderTabelSiswa = renderTabelSiswa;
 window.simpanWaliKelas = simpanWaliKelas;
 window.hapusWaliKelas = hapusWaliKelas;
 window.tambahMapelBaru = tambahMapelBaru;
@@ -63,12 +78,10 @@ window.simpanCapaianTahfidz = simpanCapaianTahfidz;
 window.simpanKehadiranCatatan = simpanKehadiranCatatan;
 window.renderPrintableData = renderPrintableData;
 window.cetakRaportPDF = cetakRaportPDF;
-window.saveDataAlert = saveDataAlert;
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (window.supabase && typeof window.supabase.createClient === "function") {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } else if (!supabase) {
+  const sb = getSupabase();
+  if (!sb) {
     console.error("SDK Supabase belum terisi di HTML!");
     alert("Gagal memuat SDK Supabase. Pastikan koneksi internet stabil.");
     return;
@@ -87,8 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
    1. PENGATURAN RAPOR (TABEL: pengaturan_rapor)
    ========================================================= */
 async function loadPengaturanRapor() {
-  if (!supabase) return;
-  const { data, error } = await supabase
+  const sb = getSupabase();
+  if (!sb) return;
+  const { data, error } = await sb
     .from("pengaturan_rapor")
     .select("*")
     .limit(1)
@@ -122,7 +136,8 @@ function populateFormSetting() {
 
 async function simpanSettingRapor(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const th = document.getElementById("setting-tahun-ajaran").value.trim();
   const sm = document.getElementById("setting-semester").value;
@@ -130,7 +145,7 @@ async function simpanSettingRapor(e) {
   const md = document.getElementById("setting-nama-mudir").value.trim();
   const ny = document.getElementById("setting-niy-mudir").value.trim();
 
-  const { data: checkData } = await supabase
+  const { data: checkData } = await sb
     .from("pengaturan_rapor")
     .select("id")
     .limit(1)
@@ -138,7 +153,7 @@ async function simpanSettingRapor(e) {
 
   let res;
   if (checkData) {
-    res = await supabase
+    res = await sb
       .from("pengaturan_rapor")
       .update({
         tahun_ajaran: th,
@@ -149,7 +164,7 @@ async function simpanSettingRapor(e) {
       })
       .eq("id", checkData.id);
   } else {
-    res = await supabase.from("pengaturan_rapor").insert([
+    res = await sb.from("pengaturan_rapor").insert([
       {
         tahun_ajaran: th,
         semester: sm,
@@ -239,8 +254,9 @@ async function handleLogin(e) {
       alert("Login Administrator Gagal! Username / Password salah.");
     }
   } else {
-    if (!supabase) return;
-    const { data: wali, error } = await supabase
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data: wali, error } = await sb
       .from("wali_kelas")
       .select("*")
       .or(`username.eq.${usernameInput},nip.eq.${usernameInput}`)
@@ -279,12 +295,8 @@ function toggleSubMenuInput() {
   const container = document.getElementById("submenu-input-container");
   const arrow = document.getElementById("icon-submenu-arrow");
 
-  if (container) {
-    container.classList.toggle("hidden");
-  }
-  if (arrow) {
-    arrow.classList.toggle("rotate-180");
-  }
+  if (container) container.classList.toggle("hidden");
+  if (arrow) arrow.classList.toggle("rotate-180");
 }
 
 async function renderDashboard() {
@@ -292,6 +304,8 @@ async function renderDashboard() {
   const dashSub = document.getElementById("dash-subtitle");
   const adminContent = document.getElementById("dash-admin-content");
   const waliContent = document.getElementById("dash-wali-content");
+
+  const sb = getSupabase();
 
   if (currentRole === "admin") {
     if (dashTitle) dashTitle.textContent = "Dashboard Administrator eRapor";
@@ -302,12 +316,12 @@ async function renderDashboard() {
     if (adminContent) adminContent.classList.remove("hidden");
     if (waliContent) waliContent.classList.add("hidden");
 
-    if (!supabase) return;
+    if (!sb) return;
 
-    const { count: countSiswa } = await supabase
+    const { count: countSiswa } = await sb
       .from("siswa")
       .select("*", { count: "exact", head: true });
-    const { count: countWali } = await supabase
+    const { count: countWali } = await sb
       .from("wali_kelas")
       .select("*", { count: "exact", head: true });
 
@@ -321,7 +335,7 @@ async function renderDashboard() {
     );
     if (progressContainer) {
       progressContainer.innerHTML = "";
-      const { data: listWali } = await supabase.from("wali_kelas").select("*");
+      const { data: listWali } = await sb.from("wali_kelas").select("*");
 
       for (let k = 1; k <= 6; k++) {
         const wali = listWali
@@ -348,13 +362,13 @@ async function renderDashboard() {
     if (adminContent) adminContent.classList.add("hidden");
     if (waliContent) waliContent.classList.remove("hidden");
 
-    if (!supabase) return;
+    if (!sb) return;
 
-    const { count: countSiswaKls } = await supabase
+    const { count: countSiswaKls } = await sb
       .from("siswa")
       .select("*", { count: "exact", head: true })
       .eq("kelas", String(kelasWali));
-    const { count: countMapelKls } = await supabase
+    const { count: countMapelKls } = await sb
       .from("mapel")
       .select("*", { count: "exact", head: true })
       .eq("kelas", String(kelasWali));
@@ -433,10 +447,11 @@ function unlockKelasDropdowns() {
 async function renderTabelSiswa() {
   const tbody = document.getElementById("table-siswa-body");
   const selectKelas = document.getElementById("tambah-siswa-kelas");
-  if (!tbody || !selectKelas || !supabase) return;
+  const sb = getSupabase();
+  if (!tbody || !selectKelas || !sb) return;
 
   const kelasVal = String(selectKelas.value);
-  const { data: listSiswa, error } = await supabase
+  const { data: listSiswa, error } = await sb
     .from("siswa")
     .select("*")
     .eq("kelas", kelasVal)
@@ -465,18 +480,16 @@ async function renderTabelSiswa() {
 
 async function tambahSiswa(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const kelas = String(document.getElementById("tambah-siswa-kelas").value);
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const nama = document.getElementById("tambah-siswa-nama").value.trim();
 
-  const { error } = await supabase
-    .from("siswa")
-    .insert([{ kelas, nisn, nama }]);
+  const { error } = await sb.from("siswa").insert([{ kelas, nisn, nama }]);
 
   if (error) {
-    console.error("Gagal simpan ke Supabase:", error);
     alert(`Gagal menambah siswa: ${error.message}`);
   } else {
     alert(`Alhamdulillah! Siswa (${nama}) berhasil ditambahkan ke Supabase.`);
@@ -492,9 +505,10 @@ async function tambahSiswa(e) {
 }
 
 async function hapusSiswa(id) {
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
   if (confirm("Apakah Anda yakin ingin menghapus siswa ini?")) {
-    const { error } = await supabase.from("siswa").delete().eq("id", id);
+    const { error } = await sb.from("siswa").delete().eq("id", id);
     if (!error) {
       renderTabelSiswa();
       updateDropdownSiswa();
@@ -509,9 +523,10 @@ async function hapusSiswa(id) {
    ========================================================= */
 async function renderTabelWaliKelas() {
   const tbody = document.getElementById("table-walikelas-body");
-  if (!tbody || !supabase) return;
+  const sb = getSupabase();
+  if (!tbody || !sb) return;
 
-  const { data: listWali, error } = await supabase
+  const { data: listWali, error } = await sb
     .from("wali_kelas")
     .select("*")
     .order("kelas", { ascending: true });
@@ -543,7 +558,8 @@ async function renderTabelWaliKelas() {
 
 async function simpanWaliKelas(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const kelas = String(document.getElementById("walikelas-kelas").value);
   const nip = document.getElementById("walikelas-nip").value.trim();
@@ -551,7 +567,7 @@ async function simpanWaliKelas(e) {
   const username = document.getElementById("walikelas-username").value.trim();
   const password = document.getElementById("walikelas-password").value.trim();
 
-  const { error } = await supabase
+  const { error } = await sb
     .from("wali_kelas")
     .upsert([{ kelas, nip, nama, username, password }], {
       onConflict: "kelas",
@@ -566,9 +582,10 @@ async function simpanWaliKelas(e) {
 }
 
 async function hapusWaliKelas(id) {
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
   if (confirm("Hapus wali kelas ini?")) {
-    await supabase.from("wali_kelas").delete().eq("id", id);
+    await sb.from("wali_kelas").delete().eq("id", id);
     renderTabelWaliKelas();
   }
 }
@@ -579,10 +596,11 @@ async function hapusWaliKelas(id) {
 async function renderTabelKelolaMapel() {
   const tbody = document.getElementById("table-kelola-mapel-body");
   const selectKelas = document.getElementById("tambah-mapel-kelas");
-  if (!tbody || !selectKelas || !supabase) return;
+  const sb = getSupabase();
+  if (!tbody || !selectKelas || !sb) return;
 
   const kelasVal = String(selectKelas.value);
-  const { data: listMapel } = await supabase
+  const { data: listMapel } = await sb
     .from("mapel")
     .select("*")
     .eq("kelas", kelasVal);
@@ -610,7 +628,8 @@ async function renderTabelKelolaMapel() {
 
 async function tambahMapelBaru(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const kelas = String(document.getElementById("tambah-mapel-kelas").value);
   const name = document.getElementById("tambah-mapel-nama").value.trim();
@@ -619,7 +638,7 @@ async function tambahMapelBaru(e) {
     .getElementById("tambah-mapel-desc")
     .value.trim();
 
-  const { error } = await supabase
+  const { error } = await sb
     .from("mapel")
     .insert([{ kelas, name, value_default, desc_default }]);
   if (error) alert(error.message);
@@ -629,9 +648,10 @@ async function tambahMapelBaru(e) {
 }
 
 async function hapusMapel(id) {
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
   if (confirm("Hapus mata pelajaran ini?")) {
-    await supabase.from("mapel").delete().eq("id", id);
+    await sb.from("mapel").delete().eq("id", id);
     renderTabelKelolaMapel();
   }
 }
@@ -642,10 +662,11 @@ async function hapusMapel(id) {
 async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
   const kelasSelect = document.getElementById(selectKelasId);
   const siswaSelect = document.getElementById(selectSiswaId);
-  if (!kelasSelect || !siswaSelect || !supabase) return;
+  const sb = getSupabase();
+  if (!kelasSelect || !siswaSelect || !sb) return;
 
   const kelasVal = String(kelasSelect.value);
-  const { data: listSiswa } = await supabase
+  const { data: listSiswa } = await sb
     .from("siswa")
     .select("*")
     .eq("kelas", kelasVal)
@@ -681,7 +702,8 @@ async function updateCetakDropdownSiswa() {
    ========================================================= */
 async function simpanCapaianTahfidz(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const siswa_id = document.getElementById("tahfidz-select-siswa").value;
   if (!siswa_id) return alert("Pilih siswa terlebih dahulu!");
@@ -697,7 +719,7 @@ async function simpanCapaianTahfidz(e) {
     catatan_ummi: document.getElementById("ummi-catatan").value,
   };
 
-  const { error } = await supabase
+  const { error } = await sb
     .from("capaian_tahfidz")
     .upsert([dataInput], { onConflict: "siswa_id" });
   if (error) alert(error.message);
@@ -706,7 +728,8 @@ async function simpanCapaianTahfidz(e) {
 
 async function simpanKehadiranCatatan(e) {
   e.preventDefault();
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const siswa_id = document.getElementById("kehadiran-select-siswa").value;
   if (!siswa_id) return alert("Pilih siswa terlebih dahulu!");
@@ -719,7 +742,7 @@ async function simpanKehadiranCatatan(e) {
     catatan_wali: document.getElementById("catatan-wali-kelas").value,
   };
 
-  const { error } = await supabase
+  const { error } = await sb
     .from("kehadiran_catatan")
     .upsert([dataInput], { onConflict: "siswa_id" });
   if (error) alert(error.message);
@@ -727,7 +750,8 @@ async function simpanKehadiranCatatan(e) {
 }
 
 async function renderPrintableData() {
-  if (!supabase) return;
+  const sb = getSupabase();
+  if (!sb) return;
 
   const rawKelas = document.getElementById("cetak-select-kelas")?.value;
   const kelasVal = String(rawKelas || "").trim();
@@ -746,7 +770,7 @@ async function renderPrintableData() {
   }
 
   // 1. Ambil Identitas Siswa
-  const { data: s } = await supabase
+  const { data: s } = await sb
     .from("siswa")
     .select("*")
     .eq("id", siswaId)
@@ -754,33 +778,33 @@ async function renderPrintableData() {
 
   const targetKelas = s && s.kelas ? String(s.kelas).trim() : kelasVal;
 
-  // 2. Ambil Data Wali Kelas (Pencocokan kelas yang fleksibel)
-  const { data: listWali } = await supabase.from("wali_kelas").select("*");
+  // 2. Ambil Data Wali Kelas
+  const { data: listWali } = await sb.from("wali_kelas").select("*");
   const wali = listWali
     ? listWali.find((w) => String(w.kelas).trim() === targetKelas)
     : null;
 
   // 3. Ambil Capaian Tahfidz
-  const { data: tf } = await supabase
+  const { data: tf } = await sb
     .from("capaian_tahfidz")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
 
   // 4. Ambil Kehadiran & Catatan
-  const { data: kh } = await supabase
+  const { data: kh } = await sb
     .from("kehadiran_catatan")
     .select("*")
     .eq("siswa_id", siswaId)
     .maybeSingle();
 
   // 5. Ambil Daftar Mata Pelajaran & Nilai Siswa
-  const { data: listMapel } = await supabase
+  const { data: listMapel } = await sb
     .from("mapel")
     .select("*")
     .eq("kelas", targetKelas);
 
-  const { data: listNilai } = await supabase
+  const { data: listNilai } = await sb
     .from("nilai_mapel")
     .select("*")
     .eq("siswa_id", siswaId);
@@ -885,19 +909,14 @@ async function renderPrintableData() {
 }
 
 async function cetakRaportPDF() {
-  // 1. Pindah ke tab cetak
   switchTab("cetak-raport");
-
-  // 2. Render ulang data siswa
   await renderPrintableData();
 
-  // 3. Lepaskan class hidden secara manual dari elemen tab cetak
   const tabCetak = document.getElementById("tab-cetak-raport");
   if (tabCetak) {
     tabCetak.classList.remove("hidden");
   }
 
-  // 4. Jeda sebentar agar browser selesai melakukan render DOM
   setTimeout(() => {
     window.print();
   }, 400);

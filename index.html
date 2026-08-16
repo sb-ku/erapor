@@ -32,11 +32,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
 
-    <!-- Supabase JS Client Library SDK v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- File CSS Eksternal -->
-    <link rel="stylesheet" href="style.css?v=2.0" />
+    <!-- File CSS Eksternal Versi Baru -->
+    <link rel="stylesheet" href="style.css?v=3.0" />
   </head>
   <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
     <!-- ================= VIEW 1: LOGIN ================= -->
@@ -1029,14 +1026,14 @@
                     id="tahfidz-predikat-tasmi"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
                   >
-                    <option value="Mumtaz (Sangat Baik)" selected>
+                    <option value="Mumtaz" selected>
                       Mumtaz (Sangat Baik)
                     </option>
-                    <option value="Jayyid Jiddan (Baik Sekali)">
+                    <option value="Jayyid J.">
                       Jayyid Jiddan (Baik Sekali)
                     </option>
-                    <option value="Jayyid (Baik)">Jayyid (Baik)</option>
-                    <option value="Maqbul (Cukup)">Maqbul (Cukup)</option>
+                    <option value="Jayyid">Jayyid (Baik)</option>
+                    <option value="Maqbul">Maqbul (Cukup)</option>
                   </select>
                 </div>
                 <div class="md:col-span-2">
@@ -1104,7 +1101,7 @@
                     id="ummi-nilai-tajwid"
                     class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-semibold"
                   >
-                    <option value="A (Sangat Baik / Tartil)" selected>
+                    <option value="A (Tartil)" selected>
                       A (Sangat Baik / Tartil)
                     </option>
                     <option value="B (Baik)">B (Baik)</option>
@@ -1617,7 +1614,10 @@ Ananda menunjukkan keceriaan, keaktifan, dan kedisiplinan yang sangat baik dalam
       </div>
     </div>
 
-    <!-- File JavaScript Eksternal Versi Baru -->
-    <script src="script.js?v=10.0"></script>
+    <!-- 1. SDK Supabase v2 (Harus Dimuat Pertama) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 2. File Script Utama Aplikasi Versi Baru -->
+    <script src="script.js?v=11.0"></script>
   </body>
 </html>
