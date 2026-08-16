@@ -68,6 +68,7 @@ window.hapusSiswa = hapusSiswa;
 window.renderTabelSiswa = renderTabelSiswa;
 window.simpanWaliKelas = simpanWaliKelas;
 window.hapusWaliKelas = hapusWaliKelas;
+window.renderTabelKelolaMapel = renderTabelKelolaMapel;
 window.tambahMapelBaru = tambahMapelBaru;
 window.hapusMapel = hapusMapel;
 window.updateDropdownSiswa = updateDropdownSiswa;
@@ -367,11 +368,11 @@ async function renderDashboard() {
     const { count: countSiswaKls } = await sb
       .from("siswa")
       .select("*", { count: "exact", head: true })
-      .eq("kelas", String(kelasWali));
+      .or(`kelas.eq.${kelasWali},kelas.eq.${parseInt(kelasWali, 10)}`);
     const { count: countMapelKls } = await sb
       .from("mapel")
       .select("*", { count: "exact", head: true })
-      .eq("kelas", String(kelasWali));
+      .or(`kelas.eq.${kelasWali},kelas.eq.${parseInt(kelasWali, 10)}`);
 
     const elWaliSiswa = document.getElementById("dash-wali-total-siswa");
     const elWaliMapel = document.getElementById("dash-wali-total-mapel");
@@ -450,24 +451,24 @@ async function renderTabelSiswa() {
   const sb = getSupabase();
   if (!tbody || !selectKelas || !sb) return;
 
-  const kelasVal = String(selectKelas.value);
+  const kelasVal = selectKelas.value;
   const { data: listSiswa, error } = await sb
     .from("siswa")
     .select("*")
-    .eq("kelas", kelasVal)
+    .or(`kelas.eq.${kelasVal},kelas.eq.${parseInt(kelasVal, 10)}`)
     .order("nama", { ascending: true });
 
   tbody.innerHTML = "";
   if (error || !listSiswa || listSiswa.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" class="px-4 py-3 text-center text-gray-400">Belum ada data siswa.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3" class="px-4 py-3 text-center text-gray-400">Belum ada data siswa untuk Kelas ${kelasVal}.</td></tr>`;
     return;
   }
 
   listSiswa.forEach((s) => {
     tbody.innerHTML += `
       <tr class="hover:bg-gray-50 transition">
-        <td class="px-4 py-3 font-mono text-xs font-semibold text-gray-700">${s.nisn}</td>
-        <td class="px-4 py-3 font-bold text-gray-800">${s.nama}</td>
+        <td class="px-4 py-3 font-mono text-xs font-semibold text-gray-700">${s.nisn || "-"}</td>
+        <td class="px-4 py-3 font-bold text-gray-800">${s.nama || s.name || "-"}</td>
         <td class="px-4 py-3 text-center">
           <button type="button" onclick="hapusSiswa('${s.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition cursor-pointer">
             <i class="fa-solid fa-trash mr-1"></i> Hapus
@@ -483,9 +484,12 @@ async function tambahSiswa(e) {
   const sb = getSupabase();
   if (!sb) return;
 
-  const kelas = String(document.getElementById("tambah-siswa-kelas").value);
+  const kelasInput = document.getElementById("tambah-siswa-kelas").value;
   const nisn = document.getElementById("tambah-siswa-nisn").value.trim();
   const nama = document.getElementById("tambah-siswa-nama").value.trim();
+
+  // Simpan nilai kelas sebagai Integer & String fallback
+  const kelas = parseInt(kelasInput, 10);
 
   const { error } = await sb.from("siswa").insert([{ kelas, nisn, nama }]);
 
@@ -599,27 +603,32 @@ async function renderTabelKelolaMapel() {
   const sb = getSupabase();
   if (!tbody || !selectKelas || !sb) return;
 
-  const kelasVal = String(selectKelas.value);
-  const { data: listMapel } = await sb
+  const kelasVal = selectKelas.value;
+
+  // Pencarian flexibel dengan String dan Integer
+  const { data: listMapel, error } = await sb
     .from("mapel")
     .select("*")
-    .eq("kelas", kelasVal);
+    .or(`kelas.eq.${kelasVal},kelas.eq.${parseInt(kelasVal, 10)}`)
+    .order("id", { ascending: true });
 
   tbody.innerHTML = "";
-  if (!listMapel || listMapel.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-3 text-center text-gray-400">Belum ada mata pelajaran.</td></tr>`;
+  if (error || !listMapel || listMapel.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-3 text-center text-gray-400">Belum ada mata pelajaran untuk Kelas ${kelasVal}.</td></tr>`;
     return;
   }
 
   listMapel.forEach((m, index) => {
     tbody.innerHTML += `
-      <tr>
-        <td class="px-4 py-3">${index + 1}</td>
-        <td class="px-4 py-3 font-bold">${m.name}</td>
-        <td class="px-4 py-3 text-center">${m.value_default}</td>
-        <td class="px-4 py-3 text-xs">${m.desc_default}</td>
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-4 py-3 font-semibold text-gray-500">${index + 1}</td>
+        <td class="px-4 py-3 font-bold text-gray-800">${m.name || m.nama_mapel || "-"}</td>
+        <td class="px-4 py-3 text-center font-bold text-brand-700">${m.value_default ?? m.nilai_default ?? 85}</td>
+        <td class="px-4 py-3 text-xs text-gray-600">${m.desc_default ?? m.deskripsi_default ?? "-"}</td>
         <td class="px-4 py-3 text-center">
-          <button onclick="hapusMapel('${m.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold cursor-pointer">Hapus</button>
+          <button type="button" onclick="hapusMapel('${m.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition cursor-pointer">
+            <i class="fa-solid fa-trash mr-1"></i> Hapus
+          </button>
         </td>
       </tr>
     `;
@@ -631,18 +640,28 @@ async function tambahMapelBaru(e) {
   const sb = getSupabase();
   if (!sb) return;
 
-  const kelas = String(document.getElementById("tambah-mapel-kelas").value);
+  const kelasInput = document.getElementById("tambah-mapel-kelas").value;
   const name = document.getElementById("tambah-mapel-nama").value.trim();
-  const value_default = document.getElementById("tambah-mapel-nilai").value;
+  const value_default =
+    parseInt(document.getElementById("tambah-mapel-nilai").value, 10) || 85;
   const desc_default = document
     .getElementById("tambah-mapel-desc")
     .value.trim();
 
+  // Simpan nilai kelas sebagai Integer
+  const kelas = parseInt(kelasInput, 10);
+
   const { error } = await sb
     .from("mapel")
     .insert([{ kelas, name, value_default, desc_default }]);
-  if (error) alert(error.message);
-  else {
+
+  if (error) {
+    alert(`Gagal menambah mata pelajaran: ${error.message}`);
+  } else {
+    alert(`Alhamdulillah! Mata pelajaran (${name}) berhasil ditambahkan.`);
+    document.getElementById("tambah-mapel-nama").value = "";
+    document.getElementById("tambah-mapel-desc").value = "";
+
     renderTabelKelolaMapel();
   }
 }
@@ -665,20 +684,20 @@ async function populateSiswaDropdown(selectKelasId, selectSiswaId) {
   const sb = getSupabase();
   if (!kelasSelect || !siswaSelect || !sb) return;
 
-  const kelasVal = String(kelasSelect.value);
+  const kelasVal = kelasSelect.value;
   const { data: listSiswa } = await sb
     .from("siswa")
     .select("*")
-    .eq("kelas", kelasVal)
+    .or(`kelas.eq.${kelasVal},kelas.eq.${parseInt(kelasVal, 10)}`)
     .order("nama", { ascending: true });
 
   siswaSelect.innerHTML = "";
   if (listSiswa && listSiswa.length > 0) {
     listSiswa.forEach((s) => {
-      siswaSelect.innerHTML += `<option value="${s.id}">${s.nama} (NISN: ${s.nisn})</option>`;
+      siswaSelect.innerHTML += `<option value="${s.id}">${s.nama || s.name} (NISN: ${s.nisn || "-"})</option>`;
     });
   } else {
-    siswaSelect.innerHTML = `<option value="">-- Belum ada data --</option>`;
+    siswaSelect.innerHTML = `<option value="">-- Belum ada data siswa --</option>`;
   }
 }
 
@@ -802,7 +821,7 @@ async function renderPrintableData() {
   const { data: listMapel } = await sb
     .from("mapel")
     .select("*")
-    .eq("kelas", targetKelas);
+    .or(`kelas.eq.${targetKelas},kelas.eq.${parseInt(targetKelas, 10)}`);
 
   const { data: listNilai } = await sb
     .from("nilai_mapel")
@@ -847,8 +866,12 @@ async function renderPrintableData() {
         const nil = listNilai
           ? listNilai.find((n) => n.mapel_id === m.id)
           : null;
-        const nilaiAngka = nil ? nil.nilai : m.value_default || 0;
-        const deskripsi = nil ? nil.desc_default : m.desc_default || "-";
+        const nilaiAngka = nil
+          ? nil.nilai
+          : m.value_default || m.nilai_default || 0;
+        const deskripsi = nil
+          ? nil.desc_default
+          : m.desc_default || m.deskripsi_default || "-";
 
         let predikat = "C";
         if (nilaiAngka >= 90) predikat = "A (Sangat Baik)";
@@ -858,7 +881,7 @@ async function renderPrintableData() {
         mapelBody.innerHTML += `
           <tr>
             <td class="border border-gray-400 px-2 py-1 text-center">${index + 1}</td>
-            <td class="border border-gray-400 px-2 py-1 font-semibold">${m.name}</td>
+            <td class="border border-gray-400 px-2 py-1 font-semibold">${m.name || m.nama_mapel}</td>
             <td class="border border-gray-400 px-2 py-1 text-center font-bold">${nilaiAngka}</td>
             <td class="border border-gray-400 px-2 py-1 text-center font-medium">${predikat}</td>
             <td class="border border-gray-400 px-2 py-1 text-xs">${deskripsi}</td>
